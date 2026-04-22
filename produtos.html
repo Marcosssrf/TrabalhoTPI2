@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Produtos – EstoqueManager</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="../index.html">📦 EstoqueManager</a>
+    <nav>
+      <a href="../index.html">Início</a>
+      <a href="produtos.html" class="active">Produtos</a>
+      <a href="fornecedores.html">Fornecedores</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="movimentacao.html">Movimentação</a>
+    </nav>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Cadastro de Produtos</div>
+    <h1>Cadastro de Produtos</h1>
+    <p class="subtitle">Preencha os dados do produto. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+
+    <div class="form-card">
+      <form id="formProduto" novalidate>
+
+        <fieldset>
+          <legend>Identificação</legend>
+          <div class="row">
+            <div class="field">
+              <label>Código <span class="req">*</span></label>
+              <input type="text" id="codigo" placeholder="Ex.: PROD-0001" maxlength="20">
+              <span class="field-error" id="erCodigo">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Código de Barras</label>
+              <input type="text" id="codBarras" placeholder="EAN-13 ou interno">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field full">
+              <label>Nome do Produto <span class="req">*</span></label>
+              <input type="text" id="nomeProduto" placeholder="Nome completo do produto">
+              <span class="field-error" id="erNome">Campo obrigatório.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Classificação</legend>
+          <div class="row">
+            <div class="field">
+              <label>Categoria <span class="req">*</span></label>
+              <select id="categoria">
+                <option value="">Selecione...</option>
+                <option>Eletrônicos</option>
+                <option>Informática</option>
+                <option>Papelaria</option>
+                <option>Limpeza</option>
+                <option>Alimentos</option>
+                <option>Outros</option>
+              </select>
+              <span class="field-error" id="erCategoria">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Unidade de Medida <span class="req">*</span></label>
+              <select id="unidade">
+                <option value="">Selecione...</option>
+                <option>Unidade (UN)</option>
+                <option>Caixa (CX)</option>
+                <option>Quilo (KG)</option>
+                <option>Litro (LT)</option>
+                <option>Metro (MT)</option>
+              </select>
+              <span class="field-error" id="erUnidade">Campo obrigatório.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Preços e Estoque</legend>
+          <div class="row">
+            <div class="field">
+              <label>Preço de Custo (R$) <span class="req">*</span></label>
+              <input type="number" id="precoCusto" min="0" step="0.01" placeholder="0,00">
+              <span class="field-error" id="erCusto">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Margem de Lucro (%) <span class="req">*</span></label>
+              <input type="number" id="margem" min="0" step="0.01" placeholder="Ex.: 30">
+              <span class="field-error" id="erMargem">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Preço de Venda (R$)</label>
+              <input type="number" id="precoVenda" readonly placeholder="Calculado automaticamente">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Qtd. em Estoque <span class="req">*</span></label>
+              <input type="number" id="qtdAtual" min="0" placeholder="0">
+              <span class="field-error" id="erQtd">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Estoque Mínimo <span class="req">*</span></label>
+              <input type="number" id="estoqueMin" min="0" placeholder="0">
+              <span class="field-error" id="erMin">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Localização no Depósito</label>
+              <input type="text" id="localizacao" placeholder="Ex.: Prateleira A3">
+            </div>
+          </div>
+          <div class="info-box" id="infoBox"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Informações Adicionais</legend>
+          <div class="row">
+            <div class="field">
+              <label>Fornecedor Principal</label>
+              <select id="fornecedor">
+                <option value="">Selecione...</option>
+                <option>Fornecedor ABC Ltda</option>
+                <option>Tech Distribuições</option>
+                <option>Mega Atacado</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Status</label>
+              <select id="status">
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+                <option value="descontinuado">Descontinuado</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field full">
+              <label>Observações</label>
+              <textarea id="obs" placeholder="Informações adicionais sobre o produto..."></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a class="btn-back" href="../index.html">← Voltar</a>
+          <button type="submit" class="btn-submit">Salvar Produto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Lógica 1: Calcular preço de venda automaticamente
+    function calcVenda() {
+      const custo = parseFloat(document.getElementById('precoCusto').value) || 0;
+      const margem = parseFloat(document.getElementById('margem').value) || 0;
+      const venda = document.getElementById('precoVenda');
+      venda.value = (custo > 0 && margem > 0) ? (custo * (1 + margem / 100)).toFixed(2) : '';
+    }
+    document.getElementById('precoCusto').addEventListener('input', calcVenda);
+    document.getElementById('margem').addEventListener('input', calcVenda);
+
+    // Lógica 2: Alerta quando estoque atual está abaixo do mínimo
+    function checarEstoque() {
+      const atual = parseInt(document.getElementById('qtdAtual').value) || 0;
+      const min = parseInt(document.getElementById('estoqueMin').value) || 0;
+      const box = document.getElementById('infoBox');
+      if (min > 0 && atual < min) {
+        box.textContent = '⚠ Atenção: estoque atual (' + atual + ') está abaixo do mínimo (' + min + '). Um pedido de reposição será gerado ao salvar.';
+        box.className = 'info-box show';
+      } else {
+        box.className = 'info-box';
+      }
+    }
+    document.getElementById('qtdAtual').addEventListener('input', checarEstoque);
+    document.getElementById('estoqueMin').addEventListener('input', checarEstoque);
+
+    // Validação e envio
+    const obrigatorios = [
+      ['codigo','erCodigo'],['nomeProduto','erNome'],['categoria','erCategoria'],
+      ['unidade','erUnidade'],['precoCusto','erCusto'],['margem','erMargem'],
+      ['qtdAtual','erQtd'],['estoqueMin','erMin']
+    ];
+    obrigatorios.forEach(([id, er]) => {
+      document.getElementById(id).addEventListener('input', () => {
+        document.getElementById(id).classList.remove('error');
+        document.getElementById(er).classList.remove('show');
+      });
+    });
+
+    document.getElementById('formProduto').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let ok = true;
+      obrigatorios.forEach(([id, er]) => {
+        if (!document.getElementById(id).value.trim()) {
+          document.getElementById(id).classList.add('error');
+          document.getElementById(er).classList.add('show');
+          ok = false;
+        }
+      });
+      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
+      toast('Produto cadastrado com sucesso!', 'ok');
+      setTimeout(() => this.reset(), 1800);
+    });
+
+    function toast(msg, tipo) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + tipo;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+  </script>
+</body>
+</html>
