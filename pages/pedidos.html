@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Registro de Pedidos – EstoqueManager</title>
-  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="../shared.css">
   <style>
     .item-row {
       background: #f9f9f9;
@@ -200,7 +200,6 @@
       calcTotal();
     }
 
-    // Lógica 1: Calcular total em tempo real com desconto
     function calcTotal() {
       let total = 0;
       document.querySelectorAll('.item-row').forEach(row => {
@@ -212,7 +211,7 @@
       const desc = parseFloat(document.getElementById('desconto').value) || 0;
       const final = total * (1 - desc / 100);
       document.getElementById('totalPedido').textContent = 'R$ ' + final.toFixed(2).replace('.', ',');
-      // Lógica 2: Alerta para pedidos de alto valor
+
       const box = document.getElementById('infoBox');
       if (final > 5000) {
         box.textContent = '⚠ Pedido de alto valor (R$ ' + final.toFixed(2).replace('.', ',') + '). Necessário aprovação gerencial antes de confirmar.';
@@ -226,7 +225,6 @@
     addItem();
     document.getElementById('btnAddItem').addEventListener('click', addItem);
 
-    // Validação
     const obrigatorios = [
       ['dataPedido','erData'],['tipoPedido','erTipo'],
       ['cliente','erCliente'],['dataEntrega','erEntrega'],

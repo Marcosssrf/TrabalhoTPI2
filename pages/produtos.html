@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cadastro de Produtos – EstoqueManager</title>
-  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="../shared.css">
 </head>
 <body>
   <header>
@@ -157,7 +157,6 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // Lógica 1: Calcular preço de venda automaticamente
     function calcVenda() {
       const custo = parseFloat(document.getElementById('precoCusto').value) || 0;
       const margem = parseFloat(document.getElementById('margem').value) || 0;
@@ -167,7 +166,6 @@
     document.getElementById('precoCusto').addEventListener('input', calcVenda);
     document.getElementById('margem').addEventListener('input', calcVenda);
 
-    // Lógica 2: Alerta quando estoque atual está abaixo do mínimo
     function checarEstoque() {
       const atual = parseInt(document.getElementById('qtdAtual').value) || 0;
       const min = parseInt(document.getElementById('estoqueMin').value) || 0;
@@ -182,7 +180,6 @@
     document.getElementById('qtdAtual').addEventListener('input', checarEstoque);
     document.getElementById('estoqueMin').addEventListener('input', checarEstoque);
 
-    // Validação e envio
     const obrigatorios = [
       ['codigo','erCodigo'],['nomeProduto','erNome'],['categoria','erCategoria'],
       ['unidade','erUnidade'],['precoCusto','erCusto'],['margem','erMargem'],

@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cadastro de Fornecedores – EstoqueManager</title>
-  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="../shared.css">
 </head>
 <body>
   <header>
@@ -184,7 +184,6 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // Lógica 1: Máscara automática do CNPJ
     document.getElementById('cnpj').addEventListener('input', function() {
       let v = this.value.replace(/\D/g, '').slice(0, 14);
       v = v.replace(/^(\d{2})(\d)/, '$1.$2');
@@ -194,7 +193,6 @@
       this.value = v;
     });
 
-    // Lógica 2: Alerta se prazo de entrega for acima de 30 dias
     document.getElementById('prazo').addEventListener('input', function() {
       const box = document.getElementById('infoBox');
       const p = parseInt(this.value);
@@ -206,7 +204,6 @@
       }
     });
 
-    // Validação
     const obrigatorios = [
       ['razaoSocial','erRazao'],['cnpj','erCnpj'],['segmento','erSegmento'],
       ['contato','erContato'],['telefone','erTel'],['email','erEmail'],

@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cadastro de Clientes – EstoqueManager</title>
-  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="../shared.css">
 </head>
 <body>
   <header>
@@ -155,7 +155,6 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // Lógica 1: Adaptar máscara do documento conforme tipo de pessoa
     document.getElementById('tipoPessoa').addEventListener('change', function() {
       const doc = document.getElementById('documento');
       const label = document.getElementById('labelDoc');
@@ -171,7 +170,6 @@
       doc.value = '';
     });
 
-    // Lógica 2: Sugerir categoria com base no limite de crédito
     document.getElementById('limiteCredito').addEventListener('input', function() {
       const val = parseFloat(this.value) || 0;
       const sel = document.getElementById('categoriaCliente');

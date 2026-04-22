@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Movimentação de Estoque – EstoqueManager</title>
-  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="../shared.css">
   <style>
     .tipo-radio { display: flex; gap: 12px; margin-top: 4px; }
     .tipo-radio label {
@@ -155,7 +155,6 @@
   <script>
     document.getElementById('dataMov').value = new Date().toISOString().split('T')[0];
 
-    // Lógica 1: Mostrar saldo atual e saldo após a movimentação
     function atualizarSaldo() {
       const tipoEl = document.querySelector('input[name=tipoMov]:checked');
       const tipo = tipoEl ? tipoEl.value : null;
@@ -174,7 +173,6 @@
       const novoEl = document.getElementById('saldoNovo');
       novoEl.textContent = novo < 0 ? '–' : novo;
 
-      // Lógica 2: Alertar saldo insuficiente ou crítico
       if (novo < 0) {
         novoEl.className = 'num err';
         info.textContent = '✖ Quantidade insuficiente em estoque. Reduza a quantidade de saída.';
@@ -189,7 +187,6 @@
       }
     }
 
-    // Validação
     document.getElementById('formMov').addEventListener('submit', function(e) {
       e.preventDefault();
       let ok = true;
@@ -216,7 +213,6 @@
         }
       });
 
-      // Bloqueia saída com saldo insuficiente
       const tipoEl = document.querySelector('input[name=tipoMov]:checked');
       if (tipoEl && tipoEl.value === 'saida') {
         const estoque = parseInt(document.getElementById('prodMov').value) || 0;
