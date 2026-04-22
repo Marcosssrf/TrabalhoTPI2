@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Fornecedores – EstoqueManager</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="../index.html">📦 EstoqueManager</a>
+    <nav>
+      <a href="../index.html">Início</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="fornecedores.html" class="active">Fornecedores</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="movimentacao.html">Movimentação</a>
+    </nav>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Cadastro de Fornecedores</div>
+    <h1>Cadastro de Fornecedores</h1>
+    <p class="subtitle">Preencha os dados do fornecedor. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+
+    <div class="form-card">
+      <form id="formFornecedor" novalidate>
+
+        <fieldset>
+          <legend>Dados da Empresa</legend>
+          <div class="row">
+            <div class="field w2">
+              <label>Razão Social <span class="req">*</span></label>
+              <input type="text" id="razaoSocial" placeholder="Nome oficial da empresa">
+              <span class="field-error" id="erRazao">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Nome Fantasia</label>
+              <input type="text" id="nomeFantasia" placeholder="Nome comercial">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>CNPJ <span class="req">*</span></label>
+              <input type="text" id="cnpj" placeholder="00.000.000/0001-00" maxlength="18">
+              <span class="field-error" id="erCnpj">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Inscrição Estadual</label>
+              <input type="text" id="ie" placeholder="Opcional">
+            </div>
+            <div class="field">
+              <label>Segmento <span class="req">*</span></label>
+              <select id="segmento">
+                <option value="">Selecione...</option>
+                <option>Distribuidor</option>
+                <option>Fabricante</option>
+                <option>Importador</option>
+                <option>Atacadista</option>
+                <option>Prestador de Serviço</option>
+              </select>
+              <span class="field-error" id="erSegmento">Campo obrigatório.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Contato</legend>
+          <div class="row">
+            <div class="field">
+              <label>Responsável <span class="req">*</span></label>
+              <input type="text" id="contato" placeholder="Nome do contato">
+              <span class="field-error" id="erContato">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Cargo</label>
+              <input type="text" id="cargo" placeholder="Ex.: Gerente Comercial">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Telefone <span class="req">*</span></label>
+              <input type="tel" id="telefone" placeholder="(00) 0000-0000">
+              <span class="field-error" id="erTel">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Celular</label>
+              <input type="tel" id="celular" placeholder="(00) 9 0000-0000">
+            </div>
+            <div class="field">
+              <label>E-mail <span class="req">*</span></label>
+              <input type="email" id="email" placeholder="contato@empresa.com">
+              <span class="field-error" id="erEmail">E-mail inválido.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Endereço</legend>
+          <div class="row">
+            <div class="field">
+              <label>CEP <span class="req">*</span></label>
+              <input type="text" id="cep" placeholder="00000-000" maxlength="9">
+              <span class="field-error" id="erCep">Campo obrigatório.</span>
+            </div>
+            <div class="field w2">
+              <label>Logradouro <span class="req">*</span></label>
+              <input type="text" id="logradouro" placeholder="Rua, Avenida...">
+              <span class="field-error" id="erLog">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Número</label>
+              <input type="text" id="numero" placeholder="Nº">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Bairro</label>
+              <input type="text" id="bairro" placeholder="Bairro">
+            </div>
+            <div class="field">
+              <label>Cidade <span class="req">*</span></label>
+              <input type="text" id="cidade" placeholder="Cidade">
+              <span class="field-error" id="erCidade">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Estado</label>
+              <select id="estado">
+                <option value="">UF</option>
+                <option>AC</option><option>AL</option><option>AM</option><option>BA</option>
+                <option>CE</option><option>DF</option><option>ES</option><option>GO</option>
+                <option>MA</option><option>MG</option><option>MS</option><option>MT</option>
+                <option>PA</option><option>PB</option><option>PE</option><option>PI</option>
+                <option>PR</option><option>RJ</option><option>RN</option><option>RO</option>
+                <option>RR</option><option>RS</option><option>SC</option><option>SP</option>
+                <option>SE</option><option>TO</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Condições Comerciais</legend>
+          <div class="row">
+            <div class="field">
+              <label>Prazo de Entrega (dias) <span class="req">*</span></label>
+              <input type="number" id="prazo" min="1" placeholder="Ex.: 7">
+              <span class="field-error" id="erPrazo">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Desconto Padrão (%)</label>
+              <input type="number" id="desconto" min="0" max="100" step="0.1" placeholder="0">
+            </div>
+            <div class="field">
+              <label>Forma de Pagamento</label>
+              <select id="pagamento">
+                <option value="">Selecione...</option>
+                <option>À vista</option>
+                <option>30 dias</option>
+                <option>30/60 dias</option>
+                <option>30/60/90 dias</option>
+                <option>Boleto 30 dias</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field full">
+              <label>Observações</label>
+              <textarea id="obs" placeholder="Condições especiais, limite de crédito..."></textarea>
+            </div>
+          </div>
+          <div class="info-box" id="infoBox"></div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a class="btn-back" href="../index.html">← Voltar</a>
+          <button type="submit" class="btn-submit">Salvar Fornecedor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Lógica 1: Máscara automática do CNPJ
+    document.getElementById('cnpj').addEventListener('input', function() {
+      let v = this.value.replace(/\D/g, '').slice(0, 14);
+      v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+      v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+      v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+      v = v.replace(/(\d{4})(\d)/, '$1-$2');
+      this.value = v;
+    });
+
+    // Lógica 2: Alerta se prazo de entrega for acima de 30 dias
+    document.getElementById('prazo').addEventListener('input', function() {
+      const box = document.getElementById('infoBox');
+      const p = parseInt(this.value);
+      if (p > 30) {
+        box.textContent = '⚠ Prazo elevado (' + p + ' dias). Considere aumentar o estoque de segurança para produtos desse fornecedor.';
+        box.className = 'info-box show';
+      } else {
+        box.className = 'info-box';
+      }
+    });
+
+    // Validação
+    const obrigatorios = [
+      ['razaoSocial','erRazao'],['cnpj','erCnpj'],['segmento','erSegmento'],
+      ['contato','erContato'],['telefone','erTel'],['email','erEmail'],
+      ['cep','erCep'],['logradouro','erLog'],['cidade','erCidade'],['prazo','erPrazo']
+    ];
+    obrigatorios.forEach(([id, er]) => {
+      document.getElementById(id).addEventListener('input', () => {
+        document.getElementById(id).classList.remove('error');
+        document.getElementById(er).classList.remove('show');
+      });
+    });
+
+    document.getElementById('formFornecedor').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let ok = true;
+      obrigatorios.forEach(([id, er]) => {
+        if (!document.getElementById(id).value.trim()) {
+          document.getElementById(id).classList.add('error');
+          document.getElementById(er).classList.add('show');
+          ok = false;
+        }
+      });
+      const email = document.getElementById('email').value;
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('email').classList.add('error');
+        document.getElementById('erEmail').classList.add('show');
+        ok = false;
+      }
+      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
+      toast('Fornecedor cadastrado com sucesso!', 'ok');
+      setTimeout(() => this.reset(), 1800);
+    });
+
+    function toast(msg, tipo) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + tipo;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+  </script>
+</body>
+</html>
