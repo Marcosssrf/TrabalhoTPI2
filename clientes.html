@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Clientes – EstoqueManager</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+  <header>
+    <a class="logo" href="../index.html">📦 EstoqueManager</a>
+    <nav>
+      <a href="../index.html">Início</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="fornecedores.html">Fornecedores</a>
+      <a href="clientes.html" class="active">Clientes</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="movimentacao.html">Movimentação</a>
+    </nav>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Cadastro de Clientes</div>
+    <h1>Cadastro de Clientes</h1>
+    <p class="subtitle">Preencha os dados do cliente. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+
+    <div class="form-card">
+      <form id="formCliente" novalidate>
+
+        <fieldset>
+          <legend>Tipo de Pessoa</legend>
+          <div class="row">
+            <div class="field">
+              <label>Tipo <span class="req">*</span></label>
+              <select id="tipoPessoa">
+                <option value="">Selecione...</option>
+                <option value="PF">Pessoa Física (CPF)</option>
+                <option value="PJ">Pessoa Jurídica (CNPJ)</option>
+              </select>
+              <span class="field-error" id="erTipo">Campo obrigatório.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dados Pessoais</legend>
+          <div class="row">
+            <div class="field w2">
+              <label>Nome / Razão Social <span class="req">*</span></label>
+              <input type="text" id="nomeCliente" placeholder="Nome completo ou razão social">
+              <span class="field-error" id="erNome">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label id="labelDoc">CPF / CNPJ <span class="req">*</span></label>
+              <input type="text" id="documento" placeholder="000.000.000-00" maxlength="18">
+              <span class="field-error" id="erDoc">Campo obrigatório.</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Data de Nascimento</label>
+              <input type="date" id="dataNasc">
+            </div>
+            <div class="field">
+              <label>Limite de Crédito (R$)</label>
+              <input type="number" id="limiteCredito" min="0" step="0.01" placeholder="0,00">
+            </div>
+            <div class="field">
+              <label>Categoria</label>
+              <select id="categoriaCliente">
+                <option value="">Selecione...</option>
+                <option>Bronze</option>
+                <option>Prata</option>
+                <option>Ouro</option>
+                <option>Platinum</option>
+              </select>
+            </div>
+          </div>
+          <div class="info-box" id="infoBox"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Contato</legend>
+          <div class="row">
+            <div class="field">
+              <label>Telefone <span class="req">*</span></label>
+              <input type="tel" id="telCliente" placeholder="(00) 0000-0000">
+              <span class="field-error" id="erTel">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Celular</label>
+              <input type="tel" id="celCliente" placeholder="(00) 9 0000-0000">
+            </div>
+            <div class="field">
+              <label>E-mail <span class="req">*</span></label>
+              <input type="email" id="emailCliente" placeholder="cliente@email.com">
+              <span class="field-error" id="erEmail">E-mail inválido.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Endereço</legend>
+          <div class="row">
+            <div class="field">
+              <label>CEP <span class="req">*</span></label>
+              <input type="text" id="cep" placeholder="00000-000" maxlength="9">
+              <span class="field-error" id="erCep">Campo obrigatório.</span>
+            </div>
+            <div class="field w2">
+              <label>Logradouro <span class="req">*</span></label>
+              <input type="text" id="rua" placeholder="Rua, Avenida...">
+              <span class="field-error" id="erRua">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Número</label>
+              <input type="text" id="numero" placeholder="Nº">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Complemento</label>
+              <input type="text" id="complemento" placeholder="Apto, Sala...">
+            </div>
+            <div class="field">
+              <label>Bairro</label>
+              <input type="text" id="bairro" placeholder="Bairro">
+            </div>
+            <div class="field">
+              <label>Cidade <span class="req">*</span></label>
+              <input type="text" id="cidade" placeholder="Cidade">
+              <span class="field-error" id="erCidade">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Estado</label>
+              <select id="estado">
+                <option value="">UF</option>
+                <option>MG</option><option>SP</option><option>RJ</option><option>GO</option>
+                <option>DF</option><option>BA</option><option>PR</option><option>RS</option>
+                <option>SC</option><option>PE</option><option>CE</option><option>AM</option>
+                <option>PA</option><option>MT</option><option>MS</option><option>ES</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a class="btn-back" href="../index.html">← Voltar</a>
+          <button type="submit" class="btn-submit">Salvar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Lógica 1: Adaptar máscara do documento conforme tipo de pessoa
+    document.getElementById('tipoPessoa').addEventListener('change', function() {
+      const doc = document.getElementById('documento');
+      const label = document.getElementById('labelDoc');
+      if (this.value === 'PF') {
+        doc.placeholder = '000.000.000-00';
+        doc.maxLength = 14;
+        label.innerHTML = 'CPF <span class="req">*</span>';
+      } else if (this.value === 'PJ') {
+        doc.placeholder = '00.000.000/0001-00';
+        doc.maxLength = 18;
+        label.innerHTML = 'CNPJ <span class="req">*</span>';
+      }
+      doc.value = '';
+    });
+
+    // Lógica 2: Sugerir categoria com base no limite de crédito
+    document.getElementById('limiteCredito').addEventListener('input', function() {
+      const val = parseFloat(this.value) || 0;
+      const sel = document.getElementById('categoriaCliente');
+      const box = document.getElementById('infoBox');
+      if (val >= 50000) { sel.value = 'Platinum'; box.textContent = '⭐ Categoria Platinum sugerida (limite ≥ R$ 50.000).'; box.className = 'info-box show'; }
+      else if (val >= 20000) { sel.value = 'Ouro'; box.textContent = '🥇 Categoria Ouro sugerida (limite entre R$ 20.000 e R$ 49.999).'; box.className = 'info-box show'; }
+      else if (val >= 5000) { sel.value = 'Prata'; box.textContent = '🥈 Categoria Prata sugerida (limite entre R$ 5.000 e R$ 19.999).'; box.className = 'info-box show'; }
+      else { sel.value = 'Bronze'; box.className = 'info-box'; }
+    });
+
+    // Validação
+    const obrigatorios = [
+      ['tipoPessoa','erTipo'],['nomeCliente','erNome'],['documento','erDoc'],
+      ['telCliente','erTel'],['emailCliente','erEmail'],
+      ['cep','erCep'],['rua','erRua'],['cidade','erCidade']
+    ];
+    obrigatorios.forEach(([id, er]) => {
+      document.getElementById(id).addEventListener('input', () => {
+        document.getElementById(id).classList.remove('error');
+        document.getElementById(er).classList.remove('show');
+      });
+      document.getElementById(id).addEventListener('change', () => {
+        document.getElementById(id).classList.remove('error');
+        document.getElementById(er).classList.remove('show');
+      });
+    });
+
+    document.getElementById('formCliente').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let ok = true;
+      obrigatorios.forEach(([id, er]) => {
+        if (!document.getElementById(id).value.trim()) {
+          document.getElementById(id).classList.add('error');
+          document.getElementById(er).classList.add('show');
+          ok = false;
+        }
+      });
+      const email = document.getElementById('emailCliente').value;
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('emailCliente').classList.add('error');
+        document.getElementById('erEmail').classList.add('show');
+        ok = false;
+      }
+      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
+      toast('Cliente cadastrado com sucesso!', 'ok');
+      setTimeout(() => this.reset(), 1800);
+    });
+
+    function toast(msg, tipo) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + tipo;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+  </script>
+</body>
+</html>
