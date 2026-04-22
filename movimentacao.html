@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movimentação de Estoque – EstoqueManager</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .tipo-radio { display: flex; gap: 12px; margin-top: 4px; }
+    .tipo-radio label {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border: 1px solid #ccc;
+      border-radius: 4px; cursor: pointer; font-size: .92rem;
+      color: #333; font-weight: normal;
+    }
+    .tipo-radio input[type=radio] { accent-color: #2c5f8a; }
+    .tipo-radio label:has(input:checked) { border-color: #2c5f8a; background: #eef4fa; }
+
+    .saldo-box {
+      background: #f9f9f9; border: 1px solid #ddd;
+      border-radius: 4px; padding: 10px 14px;
+      display: flex; gap: 24px; align-items: center;
+      font-size: .9rem; margin-top: 8px;
+    }
+    .saldo-box .num { font-weight: bold; font-size: 1.1rem; }
+    .saldo-box .num.ok { color: #27ae60; }
+    .saldo-box .num.warn { color: #d4ac0d; }
+    .saldo-box .num.err { color: #c0392b; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="../index.html">📦 EstoqueManager</a>
+    <nav>
+      <a href="../index.html">Início</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="fornecedores.html">Fornecedores</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="movimentacao.html" class="active">Movimentação</a>
+    </nav>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Movimentação de Estoque</div>
+    <h1>Movimentação de Estoque</h1>
+    <p class="subtitle">Registre entradas e saídas do estoque. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+
+    <div class="form-card">
+      <form id="formMov" novalidate>
+
+        <fieldset>
+          <legend>Tipo de Movimentação</legend>
+          <div class="row">
+            <div class="field">
+              <label>Tipo <span class="req">*</span></label>
+              <div class="tipo-radio">
+                <label><input type="radio" name="tipoMov" id="tipoEntrada" value="entrada" onchange="atualizarSaldo()"> ⬇ Entrada</label>
+                <label><input type="radio" name="tipoMov" id="tipoSaida" value="saida" onchange="atualizarSaldo()"> ⬆ Saída</label>
+              </div>
+              <span class="field-error" id="erTipo">Selecione o tipo.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Produto e Quantidade</legend>
+          <div class="row">
+            <div class="field w2">
+              <label>Produto <span class="req">*</span></label>
+              <select id="prodMov" onchange="atualizarSaldo()">
+                <option value="">Selecione o produto...</option>
+                <option value="45">Notebook Dell 15" (Estoque atual: 45)</option>
+                <option value="12">Mouse sem fio Logitech (Estoque atual: 12)</option>
+                <option value="3">Teclado Mecânico HyperX (Estoque atual: 3)</option>
+                <option value="28">Monitor Samsung 24" (Estoque atual: 28)</option>
+                <option value="0">Headset JBL (Estoque atual: 0)</option>
+              </select>
+              <span class="field-error" id="erProd">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Quantidade <span class="req">*</span></label>
+              <input type="number" id="qtdMov" min="1" placeholder="0" oninput="atualizarSaldo()">
+              <span class="field-error" id="erQtd">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Unidade</label>
+              <input type="text" id="unidMov" value="UN" placeholder="UN, CX...">
+            </div>
+          </div>
+          <div class="saldo-box" id="saldoBox" style="display:none">
+            <div>Saldo atual: <span class="num" id="saldoAtual">–</span></div>
+            <div>→</div>
+            <div>Saldo após: <span class="num" id="saldoNovo">–</span></div>
+          </div>
+          <div class="info-box" id="infoBox"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Detalhes</legend>
+          <div class="row">
+            <div class="field">
+              <label>Motivo <span class="req">*</span></label>
+              <select id="motivoMov">
+                <option value="">Selecione...</option>
+                <optgroup label="Entrada">
+                  <option>Compra de Fornecedor</option>
+                  <option>Devolução de Cliente</option>
+                  <option>Ajuste de Inventário</option>
+                  <option>Transferência recebida</option>
+                </optgroup>
+                <optgroup label="Saída">
+                  <option>Venda a Cliente</option>
+                  <option>Devolução a Fornecedor</option>
+                  <option>Perda / Avaria</option>
+                  <option>Consumo Interno</option>
+                  <option>Transferência enviada</option>
+                </optgroup>
+              </select>
+              <span class="field-error" id="erMotivo">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Data <span class="req">*</span></label>
+              <input type="date" id="dataMov">
+              <span class="field-error" id="erData">Campo obrigatório.</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Nº do Documento</label>
+              <input type="text" id="numDoc" placeholder="NF, PED, OS...">
+            </div>
+            <div class="field">
+              <label>Responsável <span class="req">*</span></label>
+              <input type="text" id="responsavel" placeholder="Nome do responsável">
+              <span class="field-error" id="erResp">Campo obrigatório.</span>
+            </div>
+            <div class="field full">
+              <label>Observações</label>
+              <textarea id="obsMov" placeholder="Detalhes adicionais..."></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a class="btn-back" href="../index.html">← Voltar</a>
+          <button type="submit" class="btn-submit">Registrar Movimentação</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('dataMov').value = new Date().toISOString().split('T')[0];
+
+    // Lógica 1: Mostrar saldo atual e saldo após a movimentação
+    function atualizarSaldo() {
+      const tipoEl = document.querySelector('input[name=tipoMov]:checked');
+      const tipo = tipoEl ? tipoEl.value : null;
+      const prodVal = document.getElementById('prodMov').value;
+      const estoque = prodVal !== '' ? parseInt(prodVal) : null;
+      const qtd = parseInt(document.getElementById('qtdMov').value) || 0;
+      const box = document.getElementById('saldoBox');
+      const info = document.getElementById('infoBox');
+
+      if (estoque === null || !tipo) { box.style.display = 'none'; return; }
+
+      box.style.display = 'flex';
+      document.getElementById('saldoAtual').textContent = estoque;
+
+      const novo = tipo === 'entrada' ? estoque + qtd : estoque - qtd;
+      const novoEl = document.getElementById('saldoNovo');
+      novoEl.textContent = novo < 0 ? '–' : novo;
+
+      // Lógica 2: Alertar saldo insuficiente ou crítico
+      if (novo < 0) {
+        novoEl.className = 'num err';
+        info.textContent = '✖ Quantidade insuficiente em estoque. Reduza a quantidade de saída.';
+        info.className = 'info-box show';
+      } else if (novo <= 5 && novo >= 0) {
+        novoEl.className = 'num warn';
+        info.textContent = '⚠ Após esta movimentação o saldo ficará em ' + novo + ' unidades. Avalie um novo pedido de compra.';
+        info.className = 'info-box show';
+      } else {
+        novoEl.className = 'num ok';
+        info.className = 'info-box';
+      }
+    }
+
+    // Validação
+    document.getElementById('formMov').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let ok = true;
+
+      if (!document.querySelector('input[name=tipoMov]:checked')) {
+        document.getElementById('erTipo').style.display = 'block';
+        ok = false;
+      } else {
+        document.getElementById('erTipo').style.display = 'none';
+      }
+
+      const campos = [
+        ['prodMov','erProd'],['qtdMov','erQtd'],
+        ['motivoMov','erMotivo'],['dataMov','erData'],['responsavel','erResp']
+      ];
+      campos.forEach(([id, er]) => {
+        if (!document.getElementById(id).value.trim()) {
+          document.getElementById(id).classList.add('error');
+          document.getElementById(er).classList.add('show');
+          ok = false;
+        } else {
+          document.getElementById(id).classList.remove('error');
+          document.getElementById(er).classList.remove('show');
+        }
+      });
+
+      // Bloqueia saída com saldo insuficiente
+      const tipoEl = document.querySelector('input[name=tipoMov]:checked');
+      if (tipoEl && tipoEl.value === 'saida') {
+        const estoque = parseInt(document.getElementById('prodMov').value) || 0;
+        const qtd = parseInt(document.getElementById('qtdMov').value) || 0;
+        if (qtd > estoque) {
+          toast('Quantidade de saída maior que o estoque disponível!', 'err');
+          return;
+        }
+      }
+
+      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
+      toast('Movimentação registrada com sucesso!', 'ok');
+      setTimeout(() => {
+        this.reset();
+        document.getElementById('saldoBox').style.display = 'none';
+        document.getElementById('infoBox').className = 'info-box';
+      }, 1800);
+    });
+
+    function toast(msg, tipo) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + tipo;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+  </script>
+</body>
+</html>
