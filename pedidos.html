@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Pedidos – EstoqueManager</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .item-row {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .item-row .btn-remove {
+      position: absolute; top: 8px; right: 8px;
+      background: none; border: 1px solid #ccc;
+      border-radius: 3px; padding: 2px 8px;
+      font-size: .8rem; color: #c0392b; cursor: pointer;
+    }
+    .btn-add-item {
+      background: none; border: 1px dashed #aaa;
+      border-radius: 4px; padding: 8px; width: 100%;
+      font-family: inherit; font-size: .88rem; color: #666;
+      cursor: pointer; margin-top: 4px;
+    }
+    .btn-add-item:hover { border-color: #2c5f8a; color: #2c5f8a; }
+    .total-row {
+      display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+      margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd;
+      font-weight: bold;
+    }
+    .total-row span { font-size: 1.1rem; color: #2c5f8a; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="../index.html">📦 EstoqueManager</a>
+    <nav>
+      <a href="../index.html">Início</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="fornecedores.html">Fornecedores</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="pedidos.html" class="active">Pedidos</a>
+      <a href="movimentacao.html">Movimentação</a>
+    </nav>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Registro de Pedidos</div>
+    <h1>Registro de Pedidos</h1>
+    <p class="subtitle">Preencha os dados do pedido. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+
+    <div class="form-card">
+      <form id="formPedido" novalidate>
+
+        <fieldset>
+          <legend>Cabeçalho do Pedido</legend>
+          <div class="row">
+            <div class="field">
+              <label>Número do Pedido</label>
+              <input type="text" id="numPedido" value="PED-2026-0001" readonly>
+            </div>
+            <div class="field">
+              <label>Data do Pedido <span class="req">*</span></label>
+              <input type="date" id="dataPedido">
+              <span class="field-error" id="erData">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Tipo de Pedido <span class="req">*</span></label>
+              <select id="tipoPedido">
+                <option value="">Selecione...</option>
+                <option>Venda</option>
+                <option>Troca / Devolução</option>
+                <option>Consignado</option>
+              </select>
+              <span class="field-error" id="erTipo">Campo obrigatório.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Cliente e Entrega</legend>
+          <div class="row">
+            <div class="field w2">
+              <label>Cliente <span class="req">*</span></label>
+              <select id="cliente">
+                <option value="">Selecione o cliente...</option>
+                <option>João Silva – CPF: 123.456.789-00</option>
+                <option>Maria Souza – CPF: 987.654.321-00</option>
+                <option>Tech Corp Ltda – CNPJ: 00.111.222/0001-33</option>
+              </select>
+              <span class="field-error" id="erCliente">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Data de Entrega <span class="req">*</span></label>
+              <input type="date" id="dataEntrega">
+              <span class="field-error" id="erEntrega">Campo obrigatório.</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label>Endereço de Entrega <span class="req">*</span></label>
+              <select id="endEntrega">
+                <option value="">Selecione...</option>
+                <option>Endereço cadastrado</option>
+                <option>Retirar na loja</option>
+                <option>Outro endereço</option>
+              </select>
+              <span class="field-error" id="erEnd">Campo obrigatório.</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Itens do Pedido</legend>
+          <div id="itensList"></div>
+          <button type="button" class="btn-add-item" id="btnAddItem">+ Adicionar item</button>
+          <div class="total-row">
+            <label>Total do pedido:</label>
+            <span id="totalPedido">R$ 0,00</span>
+          </div>
+          <div class="info-box" id="infoBox"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Pagamento</legend>
+          <div class="row">
+            <div class="field">
+              <label>Forma de Pagamento <span class="req">*</span></label>
+              <select id="formaPag">
+                <option value="">Selecione...</option>
+                <option>Dinheiro</option>
+                <option>Cartão de Débito</option>
+                <option>Cartão de Crédito</option>
+                <option>PIX</option>
+                <option>Boleto 30 dias</option>
+              </select>
+              <span class="field-error" id="erPag">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Desconto Geral (%)</label>
+              <input type="number" id="desconto" min="0" max="100" step="0.1" value="0" placeholder="0">
+            </div>
+            <div class="field full">
+              <label>Observações</label>
+              <textarea id="obs" placeholder="Instruções especiais para o pedido..."></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <a class="btn-back" href="../index.html">← Voltar</a>
+          <button type="submit" class="btn-submit">Registrar Pedido</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.getElementById('dataPedido').value = new Date().toISOString().split('T')[0];
+
+    const produtos = [
+      { nome: 'Notebook Dell 15"', preco: 3200 },
+      { nome: 'Mouse sem fio Logitech', preco: 89.90 },
+      { nome: 'Teclado Mecânico HyperX', preco: 350 },
+      { nome: 'Monitor Samsung 24"', preco: 1200 },
+      { nome: 'Headset JBL', preco: 450 },
+    ];
+
+    let itemCount = 0;
+
+    function addItem() {
+      itemCount++;
+      const div = document.createElement('div');
+      div.className = 'item-row';
+      div.id = 'item-' + itemCount;
+      div.innerHTML =
+        '<button type="button" class="btn-remove" onclick="removeItem(' + itemCount + ')">Remover</button>' +
+        '<div class="row">' +
+          '<div class="field w2"><label>Produto</label>' +
+            '<select id="prod-' + itemCount + '" onchange="calcTotal()">' +
+              '<option value="">Selecione...</option>' +
+              produtos.map(p => '<option value="' + p.preco + '">' + p.nome + ' – R$ ' + p.preco.toFixed(2) + '</option>').join('') +
+            '</select></div>' +
+          '<div class="field"><label>Quantidade</label>' +
+            '<input type="number" id="qty-' + itemCount + '" min="1" value="1" oninput="calcTotal()">' +
+          '</div>' +
+        '</div>';
+      document.getElementById('itensList').appendChild(div);
+    }
+
+    function removeItem(n) {
+      const el = document.getElementById('item-' + n);
+      if (el) el.remove();
+      calcTotal();
+    }
+
+    // Lógica 1: Calcular total em tempo real com desconto
+    function calcTotal() {
+      let total = 0;
+      document.querySelectorAll('.item-row').forEach(row => {
+        const n = row.id.split('-')[1];
+        const preco = parseFloat(document.getElementById('prod-' + n)?.value) || 0;
+        const qty = parseInt(document.getElementById('qty-' + n)?.value) || 1;
+        total += preco * qty;
+      });
+      const desc = parseFloat(document.getElementById('desconto').value) || 0;
+      const final = total * (1 - desc / 100);
+      document.getElementById('totalPedido').textContent = 'R$ ' + final.toFixed(2).replace('.', ',');
+      // Lógica 2: Alerta para pedidos de alto valor
+      const box = document.getElementById('infoBox');
+      if (final > 5000) {
+        box.textContent = '⚠ Pedido de alto valor (R$ ' + final.toFixed(2).replace('.', ',') + '). Necessário aprovação gerencial antes de confirmar.';
+        box.className = 'info-box show';
+      } else {
+        box.className = 'info-box';
+      }
+    }
+    document.getElementById('desconto').addEventListener('input', calcTotal);
+
+    addItem();
+    document.getElementById('btnAddItem').addEventListener('click', addItem);
+
+    // Validação
+    const obrigatorios = [
+      ['dataPedido','erData'],['tipoPedido','erTipo'],
+      ['cliente','erCliente'],['dataEntrega','erEntrega'],
+      ['endEntrega','erEnd'],['formaPag','erPag']
+    ];
+    obrigatorios.forEach(([id, er]) => {
+      document.getElementById(id).addEventListener('change', () => {
+        document.getElementById(id).classList.remove('error');
+        document.getElementById(er).classList.remove('show');
+      });
+    });
+
+    document.getElementById('formPedido').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let ok = true;
+      obrigatorios.forEach(([id, er]) => {
+        if (!document.getElementById(id).value.trim()) {
+          document.getElementById(id).classList.add('error');
+          document.getElementById(er).classList.add('show');
+          ok = false;
+        }
+      });
+      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
+      toast('Pedido registrado com sucesso!', 'ok');
+    });
+
+    function toast(msg, tipo) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + tipo;
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+  </script>
+</body>
+</html>
