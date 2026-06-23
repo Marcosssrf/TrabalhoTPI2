@@ -5,8 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cadastro de Clientes – EstoqueManager</title>
   <link rel="stylesheet" href="../shared.css">
+  <style>
+
+    .btn-edit, .btn-delete {
+      border: none; border-radius: 4px; padding: 4px 10px;
+      font-size: .82rem; cursor: pointer; margin: 0 2px;
+    }
+    .btn-edit   { background: #2c5f8a; color: white; }
+    .btn-edit:hover   { background: #245178; }
+    .btn-delete { background: #c0392b; color: white; }
+    .btn-delete:hover { background: #a93226; }
+
+
+    #modalOverlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    #modalOverlay.show { display: flex; }
+    #modalBox {
+      background: white; border-radius: 6px; padding: 28px 32px;
+      max-width: 380px; width: 90%; text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,.25);
+    }
+    #modalBox h3  { color: #c0392b; margin-bottom: 10px; }
+    #modalBox p   { font-size: .92rem; color: #555; margin-bottom: 22px; }
+    #modalBox .modal-actions { display: flex; gap: 12px; justify-content: center; }
+    #btnConfirmaExclusao { background: #c0392b; color: white; }
+    #btnConfirmaExclusao:hover { background: #a93226; }
+
+    #formCliente.editing { border-top: 3px solid #e67e22; }
+    #modoEdicaoAviso {
+      display: none; background: #fff3cd; border: 1px solid #f0c040;
+      border-radius: 4px; padding: 8px 14px; font-size: .88rem;
+      color: #7a5c00; margin-bottom: 16px;
+    }
+    #modoEdicaoAviso.show { display: block; }
+
+    .loading-row td {
+      text-align: center; padding: 16px; color: #888; font-size: .88rem;
+    }
+
+    #paginacao { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+    .pg-btn {
+      border: 1px solid #ccc; background: white; border-radius: 4px;
+      padding: 4px 10px; cursor: pointer; font-size: .85rem;
+    }
+    .pg-btn.ativo { background: #2c5f8a; color: white; border-color: #2c5f8a; }
+    .pg-btn:hover:not(.ativo) { background: #eef4fa; }
+  </style>
 </head>
 <body>
+
   <header>
     <a class="logo" href="../index.html">📦 EstoqueManager</a>
     <nav>
@@ -14,6 +64,7 @@
       <a href="produtos.html">Produtos</a>
       <a href="fornecedores.html">Fornecedores</a>
       <a href="clientes.html" class="active">Clientes</a>
+      <a href="usuarios.html">Usuários</a>
       <a href="pedidos.html">Pedidos</a>
       <a href="movimentacao.html">Movimentação</a>
     </nav>
@@ -22,10 +73,56 @@
   <div class="page-wrapper">
     <div class="breadcrumb"><a href="../index.html">Início</a> › Cadastro de Clientes</div>
     <h1>Cadastro de Clientes</h1>
-    <p class="subtitle">Preencha os dados do cliente. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+    <p class="subtitle">
+      Gerencie clientes físicos e jurídicos.
+      Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.
+    </p>
 
-    <div class="form-card">
+    <div class="form-card" style="margin-bottom:24px;">
+      <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <div class="field" style="flex:1;min-width:200px;margin:0;">
+          <label>Pesquisar Cliente</label>
+          <input type="text" id="campoPesquisa" placeholder="Digite nome, documento ou e-mail…">
+        </div>
+        <button type="button" class="btn-submit" id="btnPesquisar">🔍 Pesquisar</button>
+        <button type="button" class="btn-submit" id="btnNovo"
+                style="background:#27ae60;"
+                onclick="abrirFormularioNovo()">➕ Novo</button>
+      </div>
+
+      <div id="resultadoPesquisa" style="display:none;">
+        <p style="font-size:.85rem;color:#555;margin-bottom:8px;">
+          Resultados: <strong id="totalRegistros">0</strong> cliente(s) encontrado(s)
+        </p>
+        <div style="overflow-x:auto;">
+          <table id="tabelaClientes"
+                 style="width:100%;border-collapse:collapse;font-size:.9rem;">
+            <thead>
+              <tr style="background:#2c5f8a;color:white;">
+                <th style="padding:9px 12px;text-align:left;">Código</th>
+                <th style="padding:9px 12px;text-align:left;">Nome / Razão Social</th>
+                <th style="padding:9px 12px;text-align:left;">Documento</th>
+                <th style="padding:9px 12px;text-align:left;">Categoria</th>
+                <th style="padding:9px 12px;text-align:left;">E-mail</th>
+                <th style="padding:9px 12px;text-align:center;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaClientesBody"></tbody>
+          </table>
+        </div>
+        <p id="semResultados"
+           style="display:none;color:#888;font-size:.88rem;margin-top:8px;text-align:center;">
+          Nenhum resultado encontrado.
+        </p>
+        <div id="paginacao"></div>
+      </div>
+    </div>
+
+    <div class="form-card" id="painelFormulario">
+      <div id="modoEdicaoAviso">✏️ Modo edição — você está alterando o cliente <strong id="nomeEdicaoAviso"></strong>.</div>
+
       <form id="formCliente" novalidate>
+        <input type="hidden" id="clienteId">
 
         <fieldset>
           <legend>Tipo de Pessoa</legend>
@@ -33,7 +130,7 @@
             <div class="field">
               <label>Tipo <span class="req">*</span></label>
               <select id="tipoPessoa">
-                <option value="">Selecione...</option>
+                <option value="">Selecione…</option>
                 <option value="PF">Pessoa Física (CPF)</option>
                 <option value="PJ">Pessoa Jurídica (CNPJ)</option>
               </select>
@@ -68,7 +165,7 @@
             <div class="field">
               <label>Categoria</label>
               <select id="categoriaCliente">
-                <option value="">Selecione...</option>
+                <option value="">Selecione…</option>
                 <option>Bronze</option>
                 <option>Prata</option>
                 <option>Ouro</option>
@@ -109,7 +206,7 @@
             </div>
             <div class="field w2">
               <label>Logradouro <span class="req">*</span></label>
-              <input type="text" id="rua" placeholder="Rua, Avenida...">
+              <input type="text" id="rua" placeholder="Rua, Avenida…">
               <span class="field-error" id="erRua">Campo obrigatório.</span>
             </div>
             <div class="field">
@@ -120,7 +217,7 @@
           <div class="row">
             <div class="field">
               <label>Complemento</label>
-              <input type="text" id="complemento" placeholder="Apto, Sala...">
+              <input type="text" id="complemento" placeholder="Apto, Sala…">
             </div>
             <div class="field">
               <label>Bairro</label>
@@ -145,85 +242,26 @@
         </fieldset>
 
         <div class="form-actions">
-          <a class="btn-back" href="../index.html">← Voltar</a>
-          <button type="submit" class="btn-submit">Salvar Cliente</button>
+          <button type="button" class="btn-back" id="btnCancelar">← Cancelar</button>
+          <button type="submit" class="btn-submit" id="btnSalvar">💾 Salvar Cliente</button>
         </div>
       </form>
     </div>
   </div>
 
+  <div id="modalOverlay">
+    <div id="modalBox">
+      <h3>⚠️ Confirmar Exclusão</h3>
+      <p id="modalMensagem">Deseja realmente excluir este cliente? Esta ação não pode ser desfeita.</p>
+      <div class="modal-actions">
+        <button class="btn-back"   id="btnCancelaModal">Cancelar</button>
+        <button class="btn-submit" id="btnConfirmaExclusao">Excluir</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
-  <script>
-    document.getElementById('tipoPessoa').addEventListener('change', function() {
-      const doc = document.getElementById('documento');
-      const label = document.getElementById('labelDoc');
-      if (this.value === 'PF') {
-        doc.placeholder = '000.000.000-00';
-        doc.maxLength = 14;
-        label.innerHTML = 'CPF <span class="req">*</span>';
-      } else if (this.value === 'PJ') {
-        doc.placeholder = '00.000.000/0001-00';
-        doc.maxLength = 18;
-        label.innerHTML = 'CNPJ <span class="req">*</span>';
-      }
-      doc.value = '';
-    });
-
-    document.getElementById('limiteCredito').addEventListener('input', function() {
-      const val = parseFloat(this.value) || 0;
-      const sel = document.getElementById('categoriaCliente');
-      const box = document.getElementById('infoBox');
-      if (val >= 50000) { sel.value = 'Platinum'; box.textContent = '⭐ Categoria Platinum sugerida (limite ≥ R$ 50.000).'; box.className = 'info-box show'; }
-      else if (val >= 20000) { sel.value = 'Ouro'; box.textContent = '🥇 Categoria Ouro sugerida (limite entre R$ 20.000 e R$ 49.999).'; box.className = 'info-box show'; }
-      else if (val >= 5000) { sel.value = 'Prata'; box.textContent = '🥈 Categoria Prata sugerida (limite entre R$ 5.000 e R$ 19.999).'; box.className = 'info-box show'; }
-      else { sel.value = 'Bronze'; box.className = 'info-box'; }
-    });
-
-    // Validação
-    const obrigatorios = [
-      ['tipoPessoa','erTipo'],['nomeCliente','erNome'],['documento','erDoc'],
-      ['telCliente','erTel'],['emailCliente','erEmail'],
-      ['cep','erCep'],['rua','erRua'],['cidade','erCidade']
-    ];
-    obrigatorios.forEach(([id, er]) => {
-      document.getElementById(id).addEventListener('input', () => {
-        document.getElementById(id).classList.remove('error');
-        document.getElementById(er).classList.remove('show');
-      });
-      document.getElementById(id).addEventListener('change', () => {
-        document.getElementById(id).classList.remove('error');
-        document.getElementById(er).classList.remove('show');
-      });
-    });
-
-    document.getElementById('formCliente').addEventListener('submit', function(e) {
-      e.preventDefault();
-      let ok = true;
-      obrigatorios.forEach(([id, er]) => {
-        if (!document.getElementById(id).value.trim()) {
-          document.getElementById(id).classList.add('error');
-          document.getElementById(er).classList.add('show');
-          ok = false;
-        }
-      });
-      const email = document.getElementById('emailCliente').value;
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        document.getElementById('emailCliente').classList.add('error');
-        document.getElementById('erEmail').classList.add('show');
-        ok = false;
-      }
-      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
-      toast('Cliente cadastrado com sucesso!', 'ok');
-      setTimeout(() => this.reset(), 1800);
-    });
-
-    function toast(msg, tipo) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast show ' + tipo;
-      setTimeout(() => t.className = 'toast', 3000);
-    }
-  </script>
+  <script src="clientes.js"></script>
 </body>
 </html>

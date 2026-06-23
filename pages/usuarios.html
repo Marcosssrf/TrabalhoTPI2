@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usuários — EstoqueManager</title>
+  <link rel="stylesheet" href="../shared.css" />
+  <style>
+    .auth-status {
+      font-size: .85rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: #eee;
+      color: #777;
+    }
+    .auth-status.on { background: #27ae60; color: #fff; }
+
+    .search-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+    .search-bar .field { flex: 1; }
+
+    table.users { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    table.users th, table.users td {
+      text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; font-size: .9rem;
+    }
+    table.users th { color: #555; background: #f8f8f8; }
+    .btn-del {
+      background: #c0392b; color: #fff; border: none; border-radius: 4px;
+      padding: 5px 12px; font-size: .82rem; cursor: pointer;
+    }
+    .btn-del:hover { background: #a93226; }
+    .empty { color: #999; font-size: .88rem; padding: 10px 0; }
+    .locked { color: #999; font-size: .9rem; }
+    button[disabled] { opacity: .5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="../index.html">📦 EstoqueManager</a>
+    <nav>
+      <a href="../index.html">Início</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="fornecedores.html">Fornecedores</a>
+      <a href="clientes.html">Clientes</a>
+      <a href="usuarios.html" class="active">Usuários</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="movimentacao.html">Movimentação</a>
+    </nav>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="breadcrumb">
+      <a href="../index.html">Início</a> &rsaquo; Usuários
+    </div>
+
+    <h1>Gerenciamento de Usuários</h1>
+    <p class="subtitle">
+      Cadastre um usuário, acesse o sistema, pesquise, delete e saia.
+      <span id="sessao" class="auth-status">Não autenticado</span>
+    </p>
+
+    <div class="form-card" style="margin-bottom:20px;">
+      <fieldset>
+        <legend>Cadastrar Usuário</legend>
+        <div class="row">
+          <div class="field">
+            <label>Usuário <span class="req">*</span></label>
+            <input id="reg_user" placeholder="ex.: joao" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Senha <span class="req">*</span></label>
+            <input id="reg_pass" type="password" placeholder="mínimo 4 caracteres" />
+          </div>
+          <div class="field">
+            <label>PIN (opcional)</label>
+            <input id="reg_pin" placeholder="4-10 dígitos" autocomplete="off" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <span></span>
+          <button class="btn-submit" id="btn_reg">Cadastrar</button>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="form-card" style="margin-bottom:20px;">
+      <fieldset>
+        <legend>Acessar o Sistema</legend>
+        <div class="row">
+          <div class="field">
+            <label>Usuário ou PIN</label>
+            <input id="login_user" placeholder="nome de usuário" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>PIN (alternativa)</label>
+            <input id="login_pin" placeholder="deixe vazio se usar usuário" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Senha <span class="req">*</span></label>
+            <input id="login_pass" type="password" placeholder="senha" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <span></span>
+          <span>
+            <button class="btn-submit" id="btn_login">Entrar</button>
+            <button class="btn-back" id="btn_logout" style="display:none;">Sair</button>
+          </span>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="form-card">
+      <fieldset>
+        <legend>Editar PIN de Usuário</legend>
+        <div id="pin-modal" style="display:none;">
+          <div class="row">
+            <div class="field">
+              <label>Novo PIN</label>
+              <input id="novo_pin" placeholder="deixe vazio para remover" autocomplete="off" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <span id="pin-info" style="font-size:.85rem; color:#666;"></span>
+            <span>
+              <button class="btn-submit" id="btn_salvar_pin">Salvar PIN</button>
+              <button class="btn-back" id="btn_cancelar_pin">Cancelar</button>
+            </span>
+          </div>
+        </div>
+        <p id="pin-locked" class="locked">Faça login para gerenciar PINs.</p>
+      </fieldset>
+    </div>
+
+    <div class="form-card">
+      <fieldset>
+        <legend>Pesquisar Usuários (requer login)</legend>
+        <div class="search-bar">
+          <div class="field">
+            <label>Nome de usuário</label>
+            <input id="search_q" placeholder="deixe vazio para listar todos" />
+          </div>
+          <button class="btn-submit" id="btn_search">Pesquisar</button>
+        </div>
+        <div id="results" style="margin-top:14px;">
+          <p class="locked">Faça login para pesquisar e gerenciar usuários.</p>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="usuarios.js"></script>
+</body>
+</html>
