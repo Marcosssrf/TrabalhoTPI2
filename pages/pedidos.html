@@ -3,36 +3,17 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Registro de Pedidos – EstoqueManager</title>
+  <title>Pedidos — EstoqueManager</title>
   <link rel="stylesheet" href="../shared.css">
   <style>
-    .item-row {
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 12px;
-      margin-bottom: 8px;
-      position: relative;
-    }
-    .item-row .btn-remove {
-      position: absolute; top: 8px; right: 8px;
-      background: none; border: 1px solid #ccc;
-      border-radius: 3px; padding: 2px 8px;
-      font-size: .8rem; color: #c0392b; cursor: pointer;
-    }
-    .btn-add-item {
-      background: none; border: 1px dashed #aaa;
-      border-radius: 4px; padding: 8px; width: 100%;
-      font-family: inherit; font-size: .88rem; color: #666;
-      cursor: pointer; margin-top: 4px;
-    }
-    .btn-add-item:hover { border-color: #2c5f8a; color: #2c5f8a; }
-    .total-row {
-      display: flex; justify-content: flex-end; align-items: center; gap: 12px;
-      margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd;
-      font-weight: bold;
-    }
-    .total-row span { font-size: 1.1rem; color: #2c5f8a; }
+    .status-badge { border-radius:3px;padding:2px 8px;font-size:.78rem;font-weight:bold; }
+    .st-Aberto    { background:#d6eaf8;color:#1a5276; }
+    .st-Faturado  { background:#d5f5e3;color:#1e8449; }
+    .st-Cancelado { background:#fdecea;color:#c0392b; }
+    .st-Entregue  { background:#e8daef;color:#6c3483; }
+    .item-row { display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap; }
+    .item-row .field { flex:1;min-width:120px; }
+    .btn-rem-item { background:#c0392b;color:#fff;border:none;border-radius:4px;padding:6px 10px;cursor:pointer;align-self:flex-end; }
   </style>
 </head>
 <body>
@@ -50,34 +31,82 @@
   </header>
 
   <div class="page-wrapper">
-    <div class="breadcrumb"><a href="../index.html">Início</a> › Registro de Pedidos</div>
-    <h1>Registro de Pedidos</h1>
-    <p class="subtitle">Preencha os dados do pedido. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Pedidos</div>
+    <h1>Pedidos de Venda</h1>
+    <p class="subtitle">Registre e gerencie pedidos. Campos com <span style="color:#c0392b">*</span> são obrigatórios.</p>
 
-    <div class="form-card">
+    <!-- Pesquisa -->
+    <div class="form-card" style="margin-bottom:16px;">
+      <fieldset>
+        <legend>Pesquisar Pedidos</legend>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="field" style="flex:1;">
+            <label>Busca</label>
+            <input id="campoPesquisa" placeholder="Nº pedido, cliente ou status…"/>
+          </div>
+          <button class="btn-submit" id="btnPesquisar">🔍 Pesquisar</button>
+          <button class="btn-submit" id="btnNovo" style="background:#27ae60;">+ Novo Pedido</button>
+        </div>
+        <div id="resultadoPesquisa" style="display:none;margin-top:14px;">
+          <p style="font-size:.85rem;color:#666;margin-bottom:8px;">
+            Resultados: <strong id="totalRegistros">0</strong> pedido(s)
+          </p>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.88rem;">
+              <thead>
+                <tr style="background:#f8f8f8;color:#555;">
+                  <th style="padding:8px;">Nº Pedido</th>
+                  <th style="padding:8px;">Data</th>
+                  <th style="padding:8px;">Tipo</th>
+                  <th style="padding:8px;">Cliente</th>
+                  <th style="padding:8px;text-align:right;">Total</th>
+                  <th style="padding:8px;text-align:center;">Status</th>
+                  <th style="padding:8px;text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaBody"></tbody>
+            </table>
+          </div>
+          <div id="paginacao" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;"></div>
+        </div>
+        <p id="semResultados" style="display:none;color:#999;font-size:.88rem;padding:10px 0;">Nenhum pedido encontrado.</p>
+      </fieldset>
+    </div>
+
+    <!-- Formulário -->
+    <div class="form-card" id="painelFormulario" style="display:none;">
+      <div id="modoEdicaoAviso" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:.88rem;color:#856404;">
+        ✏️ Editando pedido: <strong id="nomeEdicaoAviso"></strong>
+      </div>
       <form id="formPedido" novalidate>
+        <input type="hidden" id="pedidoId"/>
 
         <fieldset>
           <legend>Cabeçalho do Pedido</legend>
           <div class="row">
             <div class="field">
-              <label>Número do Pedido</label>
-              <input type="text" id="numPedido" value="PED-2026-0001" readonly>
+              <label>Nº Pedido</label>
+              <input type="text" id="numPedido" placeholder="Gerado automaticamente" readonly/>
             </div>
             <div class="field">
-              <label>Data do Pedido <span class="req">*</span></label>
-              <input type="date" id="dataPedido">
+              <label>Data <span class="req">*</span></label>
+              <input type="date" id="dataPedido"/>
               <span class="field-error" id="erData">Campo obrigatório.</span>
             </div>
             <div class="field">
-              <label>Tipo de Pedido <span class="req">*</span></label>
+              <label>Tipo <span class="req">*</span></label>
               <select id="tipoPedido">
                 <option value="">Selecione...</option>
-                <option>Venda</option>
-                <option>Troca / Devolução</option>
-                <option>Consignado</option>
+                <option>Venda</option><option>Devolução</option><option>Troca</option>
               </select>
               <span class="field-error" id="erTipo">Campo obrigatório.</span>
+            </div>
+            <div class="field">
+              <label>Status</label>
+              <select id="statusPedido">
+                <option>Aberto</option><option>Faturado</option>
+                <option>Entregue</option><option>Cancelado</option>
+              </select>
             </div>
           </div>
         </fieldset>
@@ -85,32 +114,15 @@
         <fieldset>
           <legend>Cliente e Entrega</legend>
           <div class="row">
-            <div class="field w2">
-              <label>Cliente <span class="req">*</span></label>
-              <select id="cliente">
-                <option value="">Selecione o cliente...</option>
-                <option>João Silva – CPF: 123.456.789-00</option>
-                <option>Maria Souza – CPF: 987.654.321-00</option>
-                <option>Tech Corp Ltda – CNPJ: 00.111.222/0001-33</option>
+            <div class="field">
+              <label>Cliente</label>
+              <select id="clienteId">
+                <option value="">Carregando…</option>
               </select>
-              <span class="field-error" id="erCliente">Campo obrigatório.</span>
             </div>
             <div class="field">
-              <label>Data de Entrega <span class="req">*</span></label>
-              <input type="date" id="dataEntrega">
-              <span class="field-error" id="erEntrega">Campo obrigatório.</span>
-            </div>
-          </div>
-          <div class="row">
-            <div class="field">
-              <label>Endereço de Entrega <span class="req">*</span></label>
-              <select id="endEntrega">
-                <option value="">Selecione...</option>
-                <option>Endereço cadastrado</option>
-                <option>Retirar na loja</option>
-                <option>Outro endereço</option>
-              </select>
-              <span class="field-error" id="erEnd">Campo obrigatório.</span>
+              <label>Data de Entrega</label>
+              <input type="date" id="dataEntrega"/>
             </div>
           </div>
         </fieldset>
@@ -118,12 +130,10 @@
         <fieldset>
           <legend>Itens do Pedido</legend>
           <div id="itensList"></div>
-          <button type="button" class="btn-add-item" id="btnAddItem">+ Adicionar item</button>
-          <div class="total-row">
-            <label>Total do pedido:</label>
-            <span id="totalPedido">R$ 0,00</span>
+          <button type="button" class="btn-back" id="btnAddItem" style="margin-top:8px;">+ Adicionar Item</button>
+          <div style="margin-top:12px;text-align:right;font-size:1rem;">
+            Total: <strong id="totalPedido">R$ 0,00</strong>
           </div>
-          <div class="info-box" id="infoBox"></div>
         </fieldset>
 
         <fieldset>
@@ -133,131 +143,297 @@
               <label>Forma de Pagamento <span class="req">*</span></label>
               <select id="formaPag">
                 <option value="">Selecione...</option>
-                <option>Dinheiro</option>
-                <option>Cartão de Débito</option>
-                <option>Cartão de Crédito</option>
-                <option>PIX</option>
-                <option>Boleto 30 dias</option>
+                <option>Dinheiro</option><option>Cartão de Crédito</option>
+                <option>Cartão de Débito</option><option>PIX</option>
+                <option>Boleto</option><option>Transferência</option>
               </select>
               <span class="field-error" id="erPag">Campo obrigatório.</span>
             </div>
             <div class="field">
-              <label>Desconto Geral (%)</label>
-              <input type="number" id="desconto" min="0" max="100" step="0.1" value="0" placeholder="0">
+              <label>Desconto (%)</label>
+              <input type="number" id="desconto" min="0" max="100" step="0.1" value="0"/>
             </div>
+          </div>
+          <div class="row">
             <div class="field full">
               <label>Observações</label>
-              <textarea id="obs" placeholder="Instruções especiais para o pedido..."></textarea>
+              <textarea id="obs" placeholder="Instruções especiais..."></textarea>
             </div>
           </div>
         </fieldset>
 
         <div class="form-actions">
-          <a class="btn-back" href="../index.html">← Voltar</a>
-          <button type="submit" class="btn-submit">Registrar Pedido</button>
+          <button type="button" class="btn-back" id="btnCancelar">← Cancelar</button>
+          <button type="submit" class="btn-submit">Salvar Pedido</button>
         </div>
       </form>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
-
+  <script src="auth.js"></script>
   <script>
-    document.getElementById('dataPedido').value = new Date().toISOString().split('T')[0];
+  'use strict';
+  const API = 'pedidos_api.php';
+  const API_CLI = 'clientes_api.php';
+  const API_PRO = 'produtos_api.php';
+  let pagina = 1, totalPag = 1, editandoId = null;
+  let produtos = [];
 
-    const produtos = [
-      { nome: 'Notebook Dell 15"', preco: 3200 },
-      { nome: 'Mouse sem fio Logitech', preco: 89.90 },
-      { nome: 'Teclado Mecânico HyperX', preco: 350 },
-      { nome: 'Monitor Samsung 24"', preco: 1200 },
-      { nome: 'Headset JBL', preco: 450 },
-    ];
+  function toast(msg, ok = true) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show '+(ok?'ok':'err');
+    setTimeout(()=>t.className='toast',3000);
+  }
+  async function api(url, opts={}) {
+    const r = await fetch(url, opts);
+    try { return await r.json(); } catch { return {ok:false,mensagem:'Erro de servidor.'}; }
+  }
+  function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtMoeda(n) { return 'R$ '+parseFloat(n||0).toFixed(2).replace('.',','); }
+  function fmtData(s) { if(!s)return'—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('pt-BR'); }
 
-    let itemCount = 0;
+  async function carregarClientes() {
+    const j = await api(API_CLI + '?por_pagina=200');
+    const sel = document.getElementById('clienteId');
+    sel.innerHTML = '<option value="">Sem cliente</option>';
+    if (j.ok && j.data) j.data.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id; o.textContent = c.nome_completo;
+      sel.appendChild(o);
+    });
+  }
 
-    function addItem() {
-      itemCount++;
-      const div = document.createElement('div');
-      div.className = 'item-row';
-      div.id = 'item-' + itemCount;
-      div.innerHTML =
-        '<button type="button" class="btn-remove" onclick="removeItem(' + itemCount + ')">Remover</button>' +
-        '<div class="row">' +
-          '<div class="field w2"><label>Produto</label>' +
-            '<select id="prod-' + itemCount + '" onchange="calcTotal()">' +
-              '<option value="">Selecione...</option>' +
-              produtos.map(p => '<option value="' + p.preco + '">' + p.nome + ' – R$ ' + p.preco.toFixed(2) + '</option>').join('') +
-            '</select></div>' +
-          '<div class="field"><label>Quantidade</label>' +
-            '<input type="number" id="qty-' + itemCount + '" min="1" value="1" oninput="calcTotal()">' +
-          '</div>' +
-        '</div>';
-      document.getElementById('itensList').appendChild(div);
+  async function carregarProdutos() {
+    const j = await api(API_PRO + '?action=options');
+    produtos = j.ok && j.data ? j.data : [];
+  }
+
+  async function carregarLista() {
+    const q   = document.getElementById('campoPesquisa').value.trim();
+    const j   = await api(API + `?pagina=${pagina}&por_pagina=10` + (q?'&search='+encodeURIComponent(q):''));
+    document.getElementById('resultadoPesquisa').style.display = 'block';
+    document.getElementById('semResultados').style.display = 'none';
+    if (!j.ok) { toast(j.mensagem,false); return; }
+    document.getElementById('totalRegistros').textContent = j.total??0;
+    totalPag = Math.max(1, Math.ceil((j.total??0)/10));
+    const tbody = document.getElementById('tabelaBody');
+    if (!j.data||j.data.length===0) {
+      tbody.innerHTML='';
+      document.getElementById('semResultados').style.display='block';
+      document.getElementById('resultadoPesquisa').style.display='none'; return;
     }
+    tbody.innerHTML = j.data.map(p=>`
+      <tr style="border-bottom:1px solid #eee;">
+        <td style="padding:8px;">${esc(p.num_pedido)}</td>
+        <td style="padding:8px;">${fmtData(p.data_pedido)}</td>
+        <td style="padding:8px;">${esc(p.tipo)}</td>
+        <td style="padding:8px;">${esc(p.cliente_nome||'—')}</td>
+        <td style="padding:8px;text-align:right;">${fmtMoeda(p.total)}</td>
+        <td style="padding:8px;text-align:center;"><span class="status-badge st-${esc(p.status)}">${esc(p.status)}</span></td>
+        <td style="padding:8px;text-align:center;white-space:nowrap;">
+          <button onclick="editarPedido(${p.id})" style="background:#2980b9;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.8rem;cursor:pointer;">✏ Editar</button>
+          <button onclick="excluirPedido(${p.id},'${esc(p.num_pedido)}')" style="background:#c0392b;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.8rem;cursor:pointer;margin-left:4px;">🗑 Excluir</button>
+        </td>
+      </tr>`).join('');
+    renderPaginacao();
+  }
 
-    function removeItem(n) {
-      const el = document.getElementById('item-' + n);
-      if (el) el.remove();
+  function renderPaginacao() {
+    const div = document.getElementById('paginacao'); div.innerHTML='';
+    for(let i=1;i<=totalPag;i++){
+      const b=document.createElement('button');
+      b.textContent=i;
+      b.style.cssText=`padding:4px 10px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:${i===pagina?'#2c5f8a':'#fff'};color:${i===pagina?'#fff':'#333'};`;
+      b.onclick=()=>{pagina=i;carregarLista();};
+      div.appendChild(b);
+    }
+  }
+
+  // ── Itens dinâmicos ───────────────────────────────────────
+  let itemCount = 0;
+  function addItem(item = null) {
+    itemCount++;
+    const id = itemCount;
+    const opts = produtos.map(p=>`<option value="${p.id}" data-preco="${p.preco_venda}">${esc(p.nome)} (${esc(p.codigo)})</option>`).join('');
+    const div  = document.createElement('div');
+    div.className = 'item-row'; div.id = 'item-row-'+id;
+    div.innerHTML = `
+      <div class="field" style="flex:2;">
+        <label>Produto</label>
+        <select id="item-prod-${id}" onchange="preencherPreco(${id})" style="width:100%;">
+          <option value="">— Selecione —</option>${opts}
+        </select>
+      </div>
+      <div class="field">
+        <label>Qtd <span class="req">*</span></label>
+        <input type="number" id="item-qty-${id}" min="1" value="1" oninput="calcTotal()" style="width:70px;"/>
+      </div>
+      <div class="field">
+        <label>Preço Unit.</label>
+        <input type="number" id="item-preco-${id}" min="0" step="0.01" value="0" oninput="calcTotal()" style="width:90px;"/>
+      </div>
+      <div class="field">
+        <label>Subtotal</label>
+        <input type="text" id="item-sub-${id}" readonly value="R$ 0,00" style="width:90px;background:#f8f8f8;"/>
+      </div>
+      <div class="field" style="flex:2;">
+        <label>Descrição</label>
+        <input type="text" id="item-desc-${id}" placeholder="Descrição do item"/>
+      </div>
+      <button type="button" class="btn-rem-item" onclick="remItem(${id})">✕</button>`;
+    document.getElementById('itensList').appendChild(div);
+
+    if (item) {
+      document.getElementById('item-prod-'+id).value  = item.produto_id ?? '';
+      document.getElementById('item-qty-'+id).value   = item.quantidade;
+      document.getElementById('item-preco-'+id).value = item.preco_unit;
+      document.getElementById('item-desc-'+id).value  = item.descricao ?? '';
       calcTotal();
     }
+  }
 
-    function calcTotal() {
-      let total = 0;
-      document.querySelectorAll('.item-row').forEach(row => {
-        const n = row.id.split('-')[1];
-        const preco = parseFloat(document.getElementById('prod-' + n)?.value) || 0;
-        const qty = parseInt(document.getElementById('qty-' + n)?.value) || 1;
-        total += preco * qty;
-      });
-      const desc = parseFloat(document.getElementById('desconto').value) || 0;
-      const final = total * (1 - desc / 100);
-      document.getElementById('totalPedido').textContent = 'R$ ' + final.toFixed(2).replace('.', ',');
+  function remItem(id) {
+    document.getElementById('item-row-'+id)?.remove();
+    calcTotal();
+  }
 
-      const box = document.getElementById('infoBox');
-      if (final > 5000) {
-        box.textContent = '⚠ Pedido de alto valor (R$ ' + final.toFixed(2).replace('.', ',') + '). Necessário aprovação gerencial antes de confirmar.';
-        box.className = 'info-box show';
-      } else {
-        box.className = 'info-box';
-      }
-    }
-    document.getElementById('desconto').addEventListener('input', calcTotal);
+  function preencherPreco(id) {
+    const sel = document.getElementById('item-prod-'+id);
+    const opt = sel.options[sel.selectedIndex];
+    const preco = opt ? (parseFloat(opt.dataset.preco)||0) : 0;
+    document.getElementById('item-preco-'+id).value = preco.toFixed(2);
+    const nome = opt ? opt.textContent.split(' (')[0] : '';
+    document.getElementById('item-desc-'+id).value = nome;
+    calcTotal();
+  }
 
-    addItem();
-    document.getElementById('btnAddItem').addEventListener('click', addItem);
-
-    const obrigatorios = [
-      ['dataPedido','erData'],['tipoPedido','erTipo'],
-      ['cliente','erCliente'],['dataEntrega','erEntrega'],
-      ['endEntrega','erEnd'],['formaPag','erPag']
-    ];
-    obrigatorios.forEach(([id, er]) => {
-      document.getElementById(id).addEventListener('change', () => {
-        document.getElementById(id).classList.remove('error');
-        document.getElementById(er).classList.remove('show');
-      });
+  function calcTotal() {
+    let total = 0;
+    document.querySelectorAll('[id^="item-row-"]').forEach(row => {
+      const id  = row.id.replace('item-row-','');
+      const qty = parseFloat(document.getElementById('item-qty-'+id)?.value)||0;
+      const prc = parseFloat(document.getElementById('item-preco-'+id)?.value)||0;
+      const sub = qty * prc;
+      const subEl = document.getElementById('item-sub-'+id);
+      if (subEl) subEl.value = fmtMoeda(sub);
+      total += sub;
     });
+    const desc = parseFloat(document.getElementById('desconto').value)||0;
+    total = total * (1 - desc/100);
+    document.getElementById('totalPedido').textContent = fmtMoeda(total);
+    return total;
+  }
 
-    document.getElementById('formPedido').addEventListener('submit', function(e) {
-      e.preventDefault();
-      let ok = true;
-      obrigatorios.forEach(([id, er]) => {
-        if (!document.getElementById(id).value.trim()) {
-          document.getElementById(id).classList.add('error');
-          document.getElementById(er).classList.add('show');
-          ok = false;
-        }
-      });
-      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
-      toast('Pedido registrado com sucesso!', 'ok');
+  function coletarItens() {
+    const itens = [];
+    document.querySelectorAll('[id^="item-row-"]').forEach(row => {
+      const id   = row.id.replace('item-row-','');
+      const prodId = document.getElementById('item-prod-'+id)?.value;
+      const qty  = parseInt(document.getElementById('item-qty-'+id)?.value)||0;
+      const preco= parseFloat(document.getElementById('item-preco-'+id)?.value)||0;
+      const desc = document.getElementById('item-desc-'+id)?.value || '';
+      if (qty > 0) itens.push({ produto_id: prodId||null, quantidade: qty, preco_unit: preco, subtotal: qty*preco, descricao: desc });
     });
+    return itens;
+  }
 
-    function toast(msg, tipo) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast show ' + tipo;
-      setTimeout(() => t.className = 'toast', 3000);
+  // ── Editar ─────────────────────────────────────────────────
+  async function editarPedido(id) {
+    const j = await api(API + '?action=buscar&id=' + id);
+    if (!j.ok) { toast(j.mensagem,false); return; }
+    const p = j.data; editandoId = id;
+    document.getElementById('pedidoId').value     = id;
+    document.getElementById('numPedido').value    = p.num_pedido    ?? '';
+    document.getElementById('dataPedido').value   = p.data_pedido   ?? '';
+    document.getElementById('tipoPedido').value   = p.tipo          ?? '';
+    document.getElementById('statusPedido').value = p.status        ?? 'Aberto';
+    document.getElementById('clienteId').value    = p.cliente_id    ?? '';
+    document.getElementById('dataEntrega').value  = p.data_entrega  ?? '';
+    document.getElementById('formaPag').value     = p.forma_pag     ?? '';
+    document.getElementById('desconto').value     = p.desconto      ?? 0;
+    document.getElementById('obs').value          = p.obs           ?? '';
+    document.getElementById('itensList').innerHTML= '';
+    itemCount = 0;
+    (p.itens || []).forEach(i => addItem(i));
+    calcTotal();
+    document.getElementById('modoEdicaoAviso').style.display = 'block';
+    document.getElementById('nomeEdicaoAviso').textContent   = p.num_pedido;
+    document.getElementById('painelFormulario').style.display= 'block';
+    document.getElementById('painelFormulario').scrollIntoView({behavior:'smooth'});
+  }
+
+  async function excluirPedido(id, num) {
+    if (!confirm(`Excluir o pedido "${num}"?`)) return;
+    const j = await api(API, {method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+    toast(j.mensagem,j.ok); if(j.ok) carregarLista();
+  }
+
+  // ── Salvar ──────────────────────────────────────────────────
+  document.getElementById('formPedido').addEventListener('submit', async(e) => {
+    e.preventDefault();
+    const obrig=[['dataPedido','erData'],['tipoPedido','erTipo'],['formaPag','erPag']];
+    let ok=true;
+    obrig.forEach(([id,er])=>{
+      const el=document.getElementById(id);
+      if(!el.value.trim()){el.classList.add('error');document.getElementById(er).classList.add('show');ok=false;}
+    });
+    if(!ok){toast('Preencha os campos obrigatórios.',false);return;}
+    const total = calcTotal();
+    const payload = {
+      id:           editandoId,
+      num_pedido:   document.getElementById('numPedido').value.trim()||undefined,
+      data_pedido:  document.getElementById('dataPedido').value,
+      tipo:         document.getElementById('tipoPedido').value,
+      status:       document.getElementById('statusPedido').value,
+      cliente_id:   document.getElementById('clienteId').value||null,
+      data_entrega: document.getElementById('dataEntrega').value||null,
+      forma_pag:    document.getElementById('formaPag').value,
+      desconto:     parseFloat(document.getElementById('desconto').value)||0,
+      total,
+      obs:          document.getElementById('obs').value.trim(),
+      itens:        coletarItens(),
+    };
+    const j = await api(API, {method:editandoId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    toast(j.mensagem,j.ok);
+    if(j.ok){
+      editandoId=null;
+      document.getElementById('formPedido').reset();
+      document.getElementById('itensList').innerHTML='';
+      document.getElementById('modoEdicaoAviso').style.display='none';
+      document.getElementById('painelFormulario').style.display='none';
+      carregarLista();
     }
+  });
+
+  document.getElementById('btnAddItem').addEventListener('click',()=>addItem());
+  document.getElementById('desconto').addEventListener('input', calcTotal);
+  document.getElementById('btnPesquisar').addEventListener('click',()=>{pagina=1;carregarLista();});
+  document.getElementById('campoPesquisa').addEventListener('keydown',e=>{if(e.key==='Enter'){pagina=1;carregarLista();}});
+  document.getElementById('btnNovo').addEventListener('click',()=>{
+    editandoId=null;
+    document.getElementById('formPedido').reset();
+    document.getElementById('itensList').innerHTML='';
+    document.getElementById('pedidoId').value='';
+    document.getElementById('modoEdicaoAviso').style.display='none';
+    document.getElementById('painelFormulario').style.display='block';
+    document.getElementById('painelFormulario').scrollIntoView({behavior:'smooth'});
+    // Data padrão = hoje
+    document.getElementById('dataPedido').value = new Date().toISOString().slice(0,10);
+  });
+  document.getElementById('btnCancelar').addEventListener('click',()=>{
+    editandoId=null;
+    document.getElementById('painelFormulario').style.display='none';
+  });
+
+  window.editarPedido  = editarPedido;
+  window.excluirPedido = excluirPedido;
+  window.preencherPreco= preencherPreco;
+  window.remItem       = remItem;
+  window.calcTotal     = calcTotal;
+
+  // Init
+  Promise.all([carregarClientes(), carregarProdutos()]).then(()=> carregarLista());
   </script>
 </body>
 </html>

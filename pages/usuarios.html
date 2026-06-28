@@ -1,36 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Usuários — EstoqueManager</title>
-  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="../shared.css"/>
   <style>
-    .auth-status {
-      font-size: .85rem;
-      padding: 4px 10px;
-      border-radius: 4px;
-      background: #eee;
-      color: #777;
-    }
-    .auth-status.on { background: #27ae60; color: #fff; }
-
-    .search-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
-    .search-bar .field { flex: 1; }
-
-    table.users { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    table.users th, table.users td {
-      text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; font-size: .9rem;
-    }
-    table.users th { color: #555; background: #f8f8f8; }
-    .btn-del {
-      background: #c0392b; color: #fff; border: none; border-radius: 4px;
-      padding: 5px 12px; font-size: .82rem; cursor: pointer;
-    }
-    .btn-del:hover { background: #a93226; }
-    .empty { color: #999; font-size: .88rem; padding: 10px 0; }
-    .locked { color: #999; font-size: .9rem; }
-    button[disabled] { opacity: .5; cursor: not-allowed; }
+    .badge-admin { background:#e67e22;color:#fff;border-radius:3px;padding:1px 7px;font-size:.76rem; }
+    .badge-user  { background:#bdc3c7;color:#555;border-radius:3px;padding:1px 7px;font-size:.76rem; }
+    table.users  { width:100%;border-collapse:collapse;font-size:.88rem; }
+    table.users th,table.users td { padding:8px 10px;border-bottom:1px solid #eee;text-align:left; }
+    table.users th { background:#f8f8f8;color:#555; }
+    .locked { color:#999;font-size:.9rem; }
+    .admin-only { display:none; }
   </style>
 </head>
 <body>
@@ -48,108 +30,206 @@
   </header>
 
   <div class="page-wrapper">
-    <div class="breadcrumb">
-      <a href="../index.html">Início</a> &rsaquo; Usuários
-    </div>
-
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Usuários</div>
     <h1>Gerenciamento de Usuários</h1>
-    <p class="subtitle">
-      Cadastre um usuário, acesse o sistema, pesquise, delete e saia.
-      <span id="sessao" class="auth-status">Não autenticado</span>
-    </p>
+    <p class="subtitle">Cadastre, edite e gerencie os usuários do sistema.</p>
 
+    <!-- Cadastro / Edição -->
     <div class="form-card" style="margin-bottom:20px;">
       <fieldset>
-        <legend>Cadastrar Usuário</legend>
+        <legend id="legendForm">Cadastrar Usuário</legend>
+        <input type="hidden" id="editId"/>
         <div class="row">
           <div class="field">
             <label>Usuário <span class="req">*</span></label>
-            <input id="reg_user" placeholder="ex.: joao" autocomplete="off" />
+            <input id="reg_user" placeholder="ex.: joao" autocomplete="off"/>
           </div>
           <div class="field">
-            <label>Senha <span class="req">*</span></label>
-            <input id="reg_pass" type="password" placeholder="mínimo 4 caracteres" />
+            <label>Senha <span class="req">*</span> <small id="senhaHint" style="color:#888;">(mín. 4 caracteres)</small></label>
+            <input id="reg_pass" type="password" placeholder="senha"/>
           </div>
           <div class="field">
             <label>PIN (opcional)</label>
-            <input id="reg_pin" placeholder="4-10 dígitos" autocomplete="off" />
+            <input id="reg_pin" placeholder="4–10 dígitos" autocomplete="off"/>
+          </div>
+          <div class="field admin-only" id="campoAdmin">
+            <label>Perfil</label>
+            <select id="reg_admin">
+              <option value="0">Usuário comum</option>
+              <option value="1">Administrador</option>
+            </select>
           </div>
         </div>
         <div class="form-actions">
-          <span></span>
+          <button class="btn-back" id="btnCancelarEdicao" style="display:none;">← Cancelar</button>
           <button class="btn-submit" id="btn_reg">Cadastrar</button>
         </div>
       </fieldset>
     </div>
 
-    <div class="form-card" style="margin-bottom:20px;">
-      <fieldset>
-        <legend>Acessar o Sistema</legend>
-        <div class="row">
-          <div class="field">
-            <label>Usuário ou PIN</label>
-            <input id="login_user" placeholder="nome de usuário" autocomplete="off" />
-          </div>
-          <div class="field">
-            <label>PIN (alternativa)</label>
-            <input id="login_pin" placeholder="deixe vazio se usar usuário" autocomplete="off" />
-          </div>
-          <div class="field">
-            <label>Senha <span class="req">*</span></label>
-            <input id="login_pass" type="password" placeholder="senha" />
-          </div>
-        </div>
-        <div class="form-actions">
-          <span></span>
-          <span>
-            <button class="btn-submit" id="btn_login">Entrar</button>
-            <button class="btn-back" id="btn_logout" style="display:none;">Sair</button>
-          </span>
-        </div>
-      </fieldset>
-    </div>
-
+    <!-- Listagem -->
     <div class="form-card">
       <fieldset>
-        <legend>Editar PIN de Usuário</legend>
-        <div id="pin-modal" style="display:none;">
-          <div class="row">
-            <div class="field">
-              <label>Novo PIN</label>
-              <input id="novo_pin" placeholder="deixe vazio para remover" autocomplete="off" />
-            </div>
+        <legend>Usuários Cadastrados</legend>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+          <div class="field" style="flex:1;">
+            <label>Buscar usuário</label>
+            <input id="search_q" placeholder="deixe vazio para listar todos"/>
           </div>
-          <div class="form-actions">
-            <span id="pin-info" style="font-size:.85rem; color:#666;"></span>
-            <span>
-              <button class="btn-submit" id="btn_salvar_pin">Salvar PIN</button>
-              <button class="btn-back" id="btn_cancelar_pin">Cancelar</button>
-            </span>
-          </div>
+          <button class="btn-submit" id="btn_search">🔍 Pesquisar</button>
         </div>
-        <p id="pin-locked" class="locked">Faça login para gerenciar PINs.</p>
-      </fieldset>
-    </div>
-
-    <div class="form-card">
-      <fieldset>
-        <legend>Pesquisar Usuários (requer login)</legend>
-        <div class="search-bar">
-          <div class="field">
-            <label>Nome de usuário</label>
-            <input id="search_q" placeholder="deixe vazio para listar todos" />
-          </div>
-          <button class="btn-submit" id="btn_search">Pesquisar</button>
-        </div>
-        <div id="results" style="margin-top:14px;">
-          <p class="locked">Faça login para pesquisar e gerenciar usuários.</p>
+        <div id="results">
+          <p class="locked">Carregando usuários…</p>
         </div>
       </fieldset>
     </div>
   </div>
 
   <div id="toast" class="toast"></div>
+  <script src="auth.js"></script>
+  <script>
+  'use strict';
+  const API = 'usuarios_api.php';
+  let editandoId = null;
 
-  <script src="usuarios.js"></script>
+  function toast(msg, ok = true) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast show ' + (ok ? 'ok' : 'err');
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+  async function api(url, opts = {}) {
+    const r = await fetch(url, opts);
+    try { return await r.json(); } catch { return { ok: false, mensagem: 'Erro de servidor.' }; }
+  }
+  function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Mostra controles de admin após auth.js confirmar perfil
+  window.addEventListener('auth:pronto', (e) => {
+    if (e.detail.admin) {
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+    }
+  });
+
+  // ── Cadastrar / Editar ────────────────────────────────────
+  document.getElementById('btn_reg').addEventListener('click', async () => {
+    const u    = document.getElementById('reg_user').value.trim();
+    const p    = document.getElementById('reg_pass').value;
+    const pin  = document.getElementById('reg_pin').value.trim();
+    const adm  = parseInt(document.getElementById('reg_admin').value || '0');
+
+    if (!u) { toast('Informe o nome de usuário.', false); return; }
+
+    if (editandoId) {
+      // Atualização
+      const payload = { id: editandoId, username: u, pin, admin: adm };
+      const j = await api(API, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      toast(j.mensagem, j.ok);
+      if (j.ok) { cancelarEdicao(); pesquisar(); }
+
+      // Troca de senha separada se preenchida
+      if (p && j.ok) {
+        if (p.length < 4) { toast('Nova senha muito curta (mín. 4).', false); return; }
+        const js = await api(API + '?action=trocarsenha', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: editandoId, nova_senha: p }) });
+        toast(js.mensagem, js.ok);
+      }
+    } else {
+      // Cadastro
+      if (!p) { toast('Informe a senha.', false); return; }
+      if (p.length < 4) { toast('Senha deve ter ao menos 4 caracteres.', false); return; }
+      const j = await api(API + '?action=register', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ username: u, password: p, pin, admin: adm }),
+      });
+      toast(j.mensagem, j.ok);
+      if (j.ok) { limparForm(); pesquisar(); }
+    }
+  });
+
+  function limparForm() {
+    document.getElementById('reg_user').value = '';
+    document.getElementById('reg_pass').value = '';
+    document.getElementById('reg_pin').value  = '';
+    document.getElementById('reg_admin').value = '0';
+    document.getElementById('editId').value = '';
+  }
+
+  function cancelarEdicao() {
+    editandoId = null;
+    limparForm();
+    document.getElementById('legendForm').textContent = 'Cadastrar Usuário';
+    document.getElementById('btn_reg').textContent = 'Cadastrar';
+    document.getElementById('btnCancelarEdicao').style.display = 'none';
+    document.getElementById('senhaHint').textContent = '(mín. 4 caracteres)';
+  }
+  document.getElementById('btnCancelarEdicao').addEventListener('click', cancelarEdicao);
+
+  // ── Pesquisar ─────────────────────────────────────────────
+  async function pesquisar() {
+    const q   = document.getElementById('search_q').value.trim();
+    const url = API + (q ? '?search=' + encodeURIComponent(q) : '');
+    const j   = await api(url);
+    const out = document.getElementById('results');
+
+    if (!j.ok) { out.innerHTML = `<p class="locked">${esc(j.mensagem)}</p>`; return; }
+    if (!j.data || j.data.length === 0) {
+      out.innerHTML = '<p style="color:#999;font-size:.88rem;">Nenhum usuário encontrado.</p>'; return;
+    }
+
+    const isAdmin = window.usuarioLogado?.admin;
+    out.innerHTML = `
+      <table class="users">
+        <thead><tr>
+          <th>ID</th><th>Usuário</th><th>PIN</th><th>Perfil</th><th>Criado em</th>
+          ${isAdmin ? '<th>Ações</th>' : ''}
+        </tr></thead>
+        <tbody>
+          ${j.data.map(u => `
+            <tr>
+              <td>${u.id}</td>
+              <td>${esc(u.username)}</td>
+              <td>${u.pin ? '●●●●' : '—'}</td>
+              <td>${u.admin ? '<span class="badge-admin">Admin</span>' : '<span class="badge-user">Usuário</span>'}</td>
+              <td>${new Date(u.criado_em).toLocaleDateString('pt-BR')}</td>
+              ${isAdmin ? `<td style="white-space:nowrap;">
+                <button onclick="prepararEdicao(${u.id},'${esc(u.username)}',${u.admin},'${u.pin??''}')"
+                  style="background:#2980b9;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.8rem;cursor:pointer;">✏ Editar</button>
+                <button onclick="excluirUsuario(${u.id},'${esc(u.username)}')"
+                  style="background:#c0392b;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.8rem;cursor:pointer;margin-left:4px;">🗑 Excluir</button>
+              </td>` : ''}
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function prepararEdicao(id, username, admin, pin) {
+    editandoId = id;
+    document.getElementById('editId').value       = id;
+    document.getElementById('reg_user').value     = username;
+    document.getElementById('reg_pass').value     = '';
+    document.getElementById('reg_pin').value      = pin;
+    document.getElementById('reg_admin').value    = admin ? '1' : '0';
+    document.getElementById('legendForm').textContent  = `Editando usuário: ${username}`;
+    document.getElementById('btn_reg').textContent     = 'Salvar Alterações';
+    document.getElementById('btnCancelarEdicao').style.display = '';
+    document.getElementById('senhaHint').textContent   = '(deixe vazio para não alterar)';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function excluirUsuario(id, nome) {
+    if (!confirm(`Excluir o usuário "${nome}"?`)) return;
+    const j = await api(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+    toast(j.mensagem, j.ok);
+    if (j.ok) pesquisar();
+  }
+
+  document.getElementById('btn_search').addEventListener('click', pesquisar);
+  document.getElementById('search_q').addEventListener('keydown', e => { if(e.key==='Enter') pesquisar(); });
+
+  window.prepararEdicao = prepararEdicao;
+  window.excluirUsuario = excluirUsuario;
+
+  // Carrega lista ao iniciar (auth.js dispara auth:pronto antes do DOMContentLoaded finish)
+  window.addEventListener('auth:pronto', () => pesquisar());
+  </script>
 </body>
 </html>

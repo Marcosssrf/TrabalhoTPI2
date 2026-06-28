@@ -3,29 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Movimentação de Estoque – EstoqueManager</title>
+  <title>Movimentação — EstoqueManager</title>
   <link rel="stylesheet" href="../shared.css">
   <style>
-    .tipo-radio { display: flex; gap: 12px; margin-top: 4px; }
-    .tipo-radio label {
-      display: flex; align-items: center; gap: 6px;
-      padding: 8px 16px; border: 1px solid #ccc;
-      border-radius: 4px; cursor: pointer; font-size: .92rem;
-      color: #333; font-weight: normal;
-    }
-    .tipo-radio input[type=radio] { accent-color: #2c5f8a; }
-    .tipo-radio label:has(input:checked) { border-color: #2c5f8a; background: #eef4fa; }
-
-    .saldo-box {
-      background: #f9f9f9; border: 1px solid #ddd;
-      border-radius: 4px; padding: 10px 14px;
-      display: flex; gap: 24px; align-items: center;
-      font-size: .9rem; margin-top: 8px;
-    }
-    .saldo-box .num { font-weight: bold; font-size: 1.1rem; }
-    .saldo-box .num.ok { color: #27ae60; }
-    .saldo-box .num.warn { color: #d4ac0d; }
-    .saldo-box .num.err { color: #c0392b; }
+    .tipo-entrada { color:#1e8449;font-weight:bold; }
+    .tipo-saida   { color:#c0392b;font-weight:bold; }
+    .saldo-box    { background:#f0f4f8;border:1px solid #cde;border-radius:5px;padding:10px 14px;margin-top:10px;font-size:.9rem; }
+    .saldo-box .num { font-weight:bold;font-size:1rem; }
   </style>
 </head>
 <body>
@@ -45,9 +29,49 @@
   <div class="page-wrapper">
     <div class="breadcrumb"><a href="../index.html">Início</a> › Movimentação de Estoque</div>
     <h1>Movimentação de Estoque</h1>
-    <p class="subtitle">Registre entradas e saídas do estoque. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+    <p class="subtitle">Registre entradas e saídas. Campos com <span style="color:#c0392b">*</span> são obrigatórios.</p>
 
-    <div class="form-card">
+    <!-- Pesquisa / Histórico -->
+    <div class="form-card" style="margin-bottom:16px;">
+      <fieldset>
+        <legend>Histórico de Movimentações</legend>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="field" style="flex:1;">
+            <label>Busca</label>
+            <input id="campoPesquisa" placeholder="Produto, motivo ou responsável…"/>
+          </div>
+          <button class="btn-submit" id="btnPesquisar">🔍 Pesquisar</button>
+          <button class="btn-submit" id="btnNovo" style="background:#27ae60;">+ Nova Movimentação</button>
+        </div>
+        <div id="resultadoPesquisa" style="display:none;margin-top:14px;">
+          <p style="font-size:.85rem;color:#666;margin-bottom:8px;">
+            Resultados: <strong id="totalRegistros">0</strong> movimentação(ões)
+          </p>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.88rem;">
+              <thead>
+                <tr style="background:#f8f8f8;color:#555;">
+                  <th style="padding:8px;">Data</th>
+                  <th style="padding:8px;">Tipo</th>
+                  <th style="padding:8px;">Produto</th>
+                  <th style="padding:8px;text-align:right;">Qtd</th>
+                  <th style="padding:8px;">Motivo</th>
+                  <th style="padding:8px;">Responsável</th>
+                  <th style="padding:8px;text-align:right;">Saldo Após</th>
+                  <th style="padding:8px;text-align:center;" id="colAcoes">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaBody"></tbody>
+            </table>
+          </div>
+          <div id="paginacao" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;"></div>
+        </div>
+        <p id="semResultados" style="display:none;color:#999;font-size:.88rem;padding:10px 0;">Nenhuma movimentação encontrada.</p>
+      </fieldset>
+    </div>
+
+    <!-- Formulário nova movimentação -->
+    <div class="form-card" id="painelFormulario" style="display:none;">
       <form id="formMov" novalidate>
 
         <fieldset>
@@ -55,9 +79,13 @@
           <div class="row">
             <div class="field">
               <label>Tipo <span class="req">*</span></label>
-              <div class="tipo-radio">
-                <label><input type="radio" name="tipoMov" id="tipoEntrada" value="entrada" onchange="atualizarSaldo()"> ⬇ Entrada</label>
-                <label><input type="radio" name="tipoMov" id="tipoSaida" value="saida" onchange="atualizarSaldo()"> ⬆ Saída</label>
+              <div style="display:flex;gap:16px;margin-top:6px;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                  <input type="radio" name="tipoMov" id="tipoEntrada" value="Entrada" onchange="atualizarSaldo()"/> ⬇ Entrada
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                  <input type="radio" name="tipoMov" id="tipoSaida"   value="Saida"   onchange="atualizarSaldo()"/> ⬆ Saída
+                </label>
               </div>
               <span class="field-error" id="erTipo">Selecione o tipo.</span>
             </div>
@@ -70,29 +98,23 @@
             <div class="field w2">
               <label>Produto <span class="req">*</span></label>
               <select id="prodMov" onchange="atualizarSaldo()">
-                <option value="">Selecione o produto...</option>
-                <option value="45">Notebook Dell 15" (Estoque atual: 45)</option>
-                <option value="12">Mouse sem fio Logitech (Estoque atual: 12)</option>
-                <option value="3">Teclado Mecânico HyperX (Estoque atual: 3)</option>
-                <option value="28">Monitor Samsung 24" (Estoque atual: 28)</option>
-                <option value="0">Headset JBL (Estoque atual: 0)</option>
+                <option value="">Carregando…</option>
               </select>
               <span class="field-error" id="erProd">Campo obrigatório.</span>
             </div>
             <div class="field">
               <label>Quantidade <span class="req">*</span></label>
-              <input type="number" id="qtdMov" min="1" placeholder="0" oninput="atualizarSaldo()">
+              <input type="number" id="qtdMov" min="1" placeholder="0" oninput="atualizarSaldo()"/>
               <span class="field-error" id="erQtd">Campo obrigatório.</span>
             </div>
             <div class="field">
               <label>Unidade</label>
-              <input type="text" id="unidMov" value="UN" placeholder="UN, CX...">
+              <input type="text" id="unidMov" value="UN" placeholder="UN, CX…"/>
             </div>
           </div>
-          <div class="saldo-box" id="saldoBox" style="display:none">
-            <div>Saldo atual: <span class="num" id="saldoAtual">–</span></div>
-            <div>→</div>
-            <div>Saldo após: <span class="num" id="saldoNovo">–</span></div>
+          <div class="saldo-box" id="saldoBox" style="display:none;">
+            <div>Saldo atual: <span class="num" id="saldoAtual">—</span></div>
+            <div id="saldoNovoRow">Saldo após: <span class="num" id="saldoNovo">—</span></div>
           </div>
           <div class="info-box" id="infoBox"></div>
         </fieldset>
@@ -104,47 +126,39 @@
               <label>Motivo <span class="req">*</span></label>
               <select id="motivoMov">
                 <option value="">Selecione...</option>
-                <optgroup label="Entrada">
-                  <option>Compra de Fornecedor</option>
-                  <option>Devolução de Cliente</option>
-                  <option>Ajuste de Inventário</option>
-                  <option>Transferência recebida</option>
-                </optgroup>
-                <optgroup label="Saída">
-                  <option>Venda a Cliente</option>
-                  <option>Devolução a Fornecedor</option>
-                  <option>Perda / Avaria</option>
-                  <option>Consumo Interno</option>
-                  <option>Transferência enviada</option>
-                </optgroup>
+                <option>Compra</option><option>Venda</option><option>Devolução</option>
+                <option>Ajuste de Inventário</option><option>Transferência</option>
+                <option>Perda / Avaria</option><option>Outros</option>
               </select>
               <span class="field-error" id="erMotivo">Campo obrigatório.</span>
             </div>
             <div class="field">
               <label>Data <span class="req">*</span></label>
-              <input type="date" id="dataMov">
+              <input type="date" id="dataMov"/>
               <span class="field-error" id="erData">Campo obrigatório.</span>
             </div>
           </div>
           <div class="row">
             <div class="field">
-              <label>Nº do Documento</label>
-              <input type="text" id="numDoc" placeholder="NF, PED, OS...">
+              <label>Nº Documento</label>
+              <input type="text" id="numDoc" placeholder="NF, PED, OS…"/>
             </div>
             <div class="field">
               <label>Responsável <span class="req">*</span></label>
-              <input type="text" id="responsavel" placeholder="Nome do responsável">
+              <input type="text" id="responsavel" placeholder="Nome do responsável"/>
               <span class="field-error" id="erResp">Campo obrigatório.</span>
             </div>
+          </div>
+          <div class="row">
             <div class="field full">
               <label>Observações</label>
-              <textarea id="obsMov" placeholder="Detalhes adicionais..."></textarea>
+              <textarea id="obsMov" placeholder="Detalhes adicionais…"></textarea>
             </div>
           </div>
         </fieldset>
 
         <div class="form-actions">
-          <a class="btn-back" href="../index.html">← Voltar</a>
+          <button type="button" class="btn-back" id="btnCancelar">← Cancelar</button>
           <button type="submit" class="btn-submit">Registrar Movimentação</button>
         </div>
       </form>
@@ -152,93 +166,173 @@
   </div>
 
   <div class="toast" id="toast"></div>
-
+  <script src="auth.js"></script>
   <script>
-    document.getElementById('dataMov').value = new Date().toISOString().split('T')[0];
+  'use strict';
+  const API     = 'movimentacao_api.php';
+  const API_PRO = 'produtos_api.php';
+  let pagina = 1, totalPag = 1, produtosMap = {};
 
-    function atualizarSaldo() {
-      const tipoEl = document.querySelector('input[name=tipoMov]:checked');
-      const tipo = tipoEl ? tipoEl.value : null;
-      const prodVal = document.getElementById('prodMov').value;
-      const estoque = prodVal !== '' ? parseInt(prodVal) : null;
-      const qtd = parseInt(document.getElementById('qtdMov').value) || 0;
-      const box = document.getElementById('saldoBox');
-      const info = document.getElementById('infoBox');
+  function toast(msg, ok=true) {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className='toast show '+(ok?'ok':'err');
+    setTimeout(()=>t.className='toast',3000);
+  }
+  async function api(url,opts={}) {
+    const r=await fetch(url,opts);
+    try{return await r.json();}catch{return{ok:false,mensagem:'Erro de servidor.'};}
+  }
+  function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function fmtData(s){if(!s)return'—';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('pt-BR');}
 
-      if (estoque === null || !tipo) { box.style.display = 'none'; return; }
-
-      box.style.display = 'flex';
-      document.getElementById('saldoAtual').textContent = estoque;
-
-      const novo = tipo === 'entrada' ? estoque + qtd : estoque - qtd;
-      const novoEl = document.getElementById('saldoNovo');
-      novoEl.textContent = novo < 0 ? '–' : novo;
-
-      if (novo < 0) {
-        novoEl.className = 'num err';
-        info.textContent = '✖ Quantidade insuficiente em estoque. Reduza a quantidade de saída.';
-        info.className = 'info-box show';
-      } else if (novo <= 5 && novo >= 0) {
-        novoEl.className = 'num warn';
-        info.textContent = '⚠ Após esta movimentação o saldo ficará em ' + novo + ' unidades. Avalie um novo pedido de compra.';
-        info.className = 'info-box show';
-      } else {
-        novoEl.className = 'num ok';
-        info.className = 'info-box';
-      }
-    }
-
-    document.getElementById('formMov').addEventListener('submit', function(e) {
-      e.preventDefault();
-      let ok = true;
-
-      if (!document.querySelector('input[name=tipoMov]:checked')) {
-        document.getElementById('erTipo').style.display = 'block';
-        ok = false;
-      } else {
-        document.getElementById('erTipo').style.display = 'none';
-      }
-
-      const campos = [
-        ['prodMov','erProd'],['qtdMov','erQtd'],
-        ['motivoMov','erMotivo'],['dataMov','erData'],['responsavel','erResp']
-      ];
-      campos.forEach(([id, er]) => {
-        if (!document.getElementById(id).value.trim()) {
-          document.getElementById(id).classList.add('error');
-          document.getElementById(er).classList.add('show');
-          ok = false;
-        } else {
-          document.getElementById(id).classList.remove('error');
-          document.getElementById(er).classList.remove('show');
-        }
+  async function carregarProdutos() {
+    const j = await api(API_PRO + '?action=options');
+    const sel = document.getElementById('prodMov');
+    sel.innerHTML = '<option value="">— Selecione —</option>';
+    produtosMap = {};
+    if (j.ok && j.data) {
+      j.data.forEach(p => {
+        produtosMap[p.id] = p;
+        const o = document.createElement('option');
+        o.value = p.id; o.textContent = `${p.nome} (${p.codigo}) — Saldo: ${p.estoque_atual}`;
+        sel.appendChild(o);
       });
-
-      const tipoEl = document.querySelector('input[name=tipoMov]:checked');
-      if (tipoEl && tipoEl.value === 'saida') {
-        const estoque = parseInt(document.getElementById('prodMov').value) || 0;
-        const qtd = parseInt(document.getElementById('qtdMov').value) || 0;
-        if (qtd > estoque) {
-          toast('Quantidade de saída maior que o estoque disponível!', 'err');
-          return;
-        }
-      }
-
-      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
-      toast('Movimentação registrada com sucesso!', 'ok');
-      setTimeout(() => {
-        this.reset();
-        document.getElementById('saldoBox').style.display = 'none';
-        document.getElementById('infoBox').className = 'info-box';
-      }, 1800);
-    });
-
-    function toast(msg, tipo) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast show ' + tipo;
-      setTimeout(() => t.className = 'toast', 3000);
     }
+  }
+
+  function atualizarSaldo() {
+    const prodId = document.getElementById('prodMov').value;
+    const qtd    = parseInt(document.getElementById('qtdMov').value)||0;
+    const tipo   = document.querySelector('input[name="tipoMov"]:checked')?.value;
+    const box    = document.getElementById('saldoBox');
+    const info   = document.getElementById('infoBox');
+
+    if (!prodId) { box.style.display='none'; return; }
+    const p      = produtosMap[prodId];
+    if (!p) return;
+
+    const saldo  = parseInt(p.estoque_atual)||0;
+    const novo   = tipo==='Entrada' ? saldo+qtd : saldo-qtd;
+    box.style.display = 'block';
+    document.getElementById('saldoAtual').textContent = saldo;
+    document.getElementById('saldoNovo').textContent  = qtd>0 ? novo : '—';
+
+    if (tipo==='Saida' && qtd>saldo) {
+      info.textContent = '⚠ Saldo insuficiente! Disponível: '+saldo+', solicitado: '+qtd+'.';
+      info.className   = 'info-box show';
+    } else { info.className='info-box'; }
+  }
+
+  async function carregarLista() {
+    const q = document.getElementById('campoPesquisa').value.trim();
+    const j = await api(API+`?pagina=${pagina}&por_pagina=10`+(q?'&search='+encodeURIComponent(q):''));
+    document.getElementById('resultadoPesquisa').style.display='block';
+    document.getElementById('semResultados').style.display='none';
+    if(!j.ok){toast(j.mensagem,false);return;}
+    document.getElementById('totalRegistros').textContent=j.total??0;
+    totalPag=Math.max(1,Math.ceil((j.total??0)/10));
+    const tbody=document.getElementById('tabelaBody');
+    if(!j.data||j.data.length===0){
+      tbody.innerHTML='';
+      document.getElementById('semResultados').style.display='block';
+      document.getElementById('resultadoPesquisa').style.display='none';return;
+    }
+    const isAdmin=window.usuarioLogado?.admin;
+    tbody.innerHTML=j.data.map(m=>`
+      <tr style="border-bottom:1px solid #eee;">
+        <td style="padding:8px;">${fmtData(m.data_mov)}</td>
+        <td style="padding:8px;" class="tipo-${m.tipo==='Entrada'?'entrada':'saida'}">${esc(m.tipo)}</td>
+        <td style="padding:8px;">${esc(m.produto_nome||'—')}</td>
+        <td style="padding:8px;text-align:right;">${esc(m.quantidade)} ${esc(m.unidade)}</td>
+        <td style="padding:8px;">${esc(m.motivo)}</td>
+        <td style="padding:8px;">${esc(m.responsavel)}</td>
+        <td style="padding:8px;text-align:right;">${esc(m.saldo_apos)}</td>
+        <td style="padding:8px;text-align:center;">
+          ${isAdmin?`<button onclick="excluirMov(${m.id})" style="background:#c0392b;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.8rem;cursor:pointer;" title="Apenas admin">🗑 Excluir</button>`:'—'}
+        </td>
+      </tr>`).join('');
+    renderPaginacao();
+  }
+
+  function renderPaginacao(){
+    const div=document.getElementById('paginacao');div.innerHTML='';
+    for(let i=1;i<=totalPag;i++){
+      const b=document.createElement('button');
+      b.textContent=i;
+      b.style.cssText=`padding:4px 10px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:${i===pagina?'#2c5f8a':'#fff'};color:${i===pagina?'#fff':'#333'};`;
+      b.onclick=()=>{pagina=i;carregarLista();};
+      div.appendChild(b);
+    }
+  }
+
+  async function excluirMov(id){
+    if(!confirm('Excluir esta movimentação? O estoque será revertido.'))return;
+    const j=await api(API,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+    toast(j.mensagem,j.ok); if(j.ok){await carregarProdutos();carregarLista();}
+  }
+
+  document.getElementById('formMov').addEventListener('submit', async(e)=>{
+    e.preventDefault();
+    const tipo=document.querySelector('input[name="tipoMov"]:checked')?.value;
+    const obrig=[
+      [tipo?null:'erTipo','erTipo'],
+      [document.getElementById('prodMov').value?null:'erProd','erProd'],
+      [document.getElementById('qtdMov').value?null:'erQtd','erQtd'],
+      [document.getElementById('motivoMov').value?null:'erMotivo','erMotivo'],
+      [document.getElementById('dataMov').value?null:'erData','erData'],
+      [document.getElementById('responsavel').value.trim()?null:'erResp','erResp'],
+    ];
+    let ok=true;
+    obrig.forEach(([val,er])=>{if(val===null){document.getElementById(er).classList.add('show');ok=false;}});
+    if(!ok){toast('Preencha os campos obrigatórios.',false);return;}
+
+    const qtd   = parseInt(document.getElementById('qtdMov').value);
+    const prodId= document.getElementById('prodMov').value;
+    const saldo = parseInt(produtosMap[prodId]?.estoque_atual)||0;
+    if(tipo==='Saida'&&qtd>saldo){toast('Saldo insuficiente!',false);return;}
+
+    const payload={
+      tipo,
+      produto_id:  prodId,
+      quantidade:  qtd,
+      unidade:     document.getElementById('unidMov').value.trim()||'UN',
+      motivo:      document.getElementById('motivoMov').value,
+      data_mov:    document.getElementById('dataMov').value,
+      num_doc:     document.getElementById('numDoc').value.trim(),
+      responsavel: document.getElementById('responsavel').value.trim(),
+      obs:         document.getElementById('obsMov').value.trim(),
+    };
+    const j=await api(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    toast(j.mensagem,j.ok);
+    if(j.ok){
+      document.getElementById('formMov').reset();
+      document.getElementById('saldoBox').style.display='none';
+      document.getElementById('infoBox').className='info-box';
+      document.getElementById('painelFormulario').style.display='none';
+      document.querySelectorAll('.field-error').forEach(el=>el.classList.remove('show'));
+      await carregarProdutos(); carregarLista();
+    }
+  });
+
+  document.getElementById('btnPesquisar').addEventListener('click',()=>{pagina=1;carregarLista();});
+  document.getElementById('campoPesquisa').addEventListener('keydown',e=>{if(e.key==='Enter'){pagina=1;carregarLista();}});
+  document.getElementById('btnNovo').addEventListener('click',()=>{
+    document.getElementById('formMov').reset();
+    document.getElementById('saldoBox').style.display='none';
+    document.getElementById('infoBox').className='info-box';
+    document.querySelectorAll('.field-error').forEach(el=>el.classList.remove('show'));
+    document.getElementById('dataMov').value=new Date().toISOString().slice(0,10);
+    document.getElementById('painelFormulario').style.display='block';
+    document.getElementById('painelFormulario').scrollIntoView({behavior:'smooth'});
+  });
+  document.getElementById('btnCancelar').addEventListener('click',()=>{
+    document.getElementById('painelFormulario').style.display='none';
+  });
+
+  window.atualizarSaldo=atualizarSaldo;
+  window.excluirMov=excluirMov;
+
+  carregarProdutos().then(()=>carregarLista());
   </script>
 </body>
 </html>

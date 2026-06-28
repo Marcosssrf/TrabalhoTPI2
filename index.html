@@ -14,22 +14,39 @@
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
     }
     header .logo { font-size: 1.1rem; font-weight: bold; color: white; text-decoration: none; }
-    nav { display: flex; flex-wrap: wrap; gap: 4px; }
+    nav { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
     nav a { color: #cde; text-decoration: none; padding: 5px 10px; border-radius: 4px; font-size: .9rem; }
     nav a:hover { background: rgba(255,255,255,.15); color: white; }
     nav a.active { background: rgba(255,255,255,.2); color: white; }
 
-    .wrapper { max-width: 860px; margin: 36px auto; padding: 0 16px 60px; }
+    #auth-user-area {
+      display: flex; align-items: center; gap: 10px;
+      font-size: .85rem; color: #cde; margin-left: 16px;
+    }
+    #btn-logout-global {
+      background: rgba(255,255,255,.15); color: #fff; border: none;
+      border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: .82rem;
+    }
+    #btn-logout-global:hover { background: rgba(255,255,255,.28); }
+
+    .wrapper { max-width: 880px; margin: 36px auto; padding: 0 16px 60px; }
 
     .welcome {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 28px;
-      margin-bottom: 28px;
+      background: white; border: 1px solid #ddd; border-radius: 6px;
+      padding: 28px; margin-bottom: 28px;
     }
     .welcome h1 { font-size: 1.4rem; color: #2c5f8a; margin-bottom: 6px; }
-    .welcome p { color: #666; font-size: .95rem; line-height: 1.6; }
+    .welcome p  { color: #666; font-size: .95rem; line-height: 1.6; }
+
+    .stats-row {
+      display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .stat-box {
+      background: white; border: 1px solid #ddd; border-radius: 6px;
+      padding: 18px 22px; flex: 1; min-width: 150px; text-align: center;
+    }
+    .stat-box .num   { font-size: 1.8rem; font-weight: bold; color: #2c5f8a; }
+    .stat-box .label { font-size: .82rem; color: #888; margin-top: 4px; }
 
     h2 { font-size: 1rem; color: #555; margin-bottom: 14px; }
 
@@ -39,19 +56,22 @@
       gap: 14px;
     }
     .menu-item {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 18px 20px;
-      text-decoration: none;
-      color: #333;
-      display: block;
+      background: white; border: 1px solid #ddd; border-radius: 6px;
+      padding: 18px 20px; text-decoration: none; color: #333; display: block;
       transition: border-color .15s, box-shadow .15s;
     }
     .menu-item:hover { border-color: #2c5f8a; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-    .menu-item .icon { font-size: 1.5rem; margin-bottom: 8px; }
-    .menu-item strong { display: block; font-size: .95rem; margin-bottom: 4px; color: #2c5f8a; }
-    .menu-item span { font-size: .83rem; color: #777; line-height: 1.4; display: block; }
+    .menu-item .icon   { font-size: 1.5rem; margin-bottom: 8px; }
+    .menu-item strong  { display: block; font-size: .95rem; margin-bottom: 4px; color: #2c5f8a; }
+    .menu-item span    { font-size: .83rem; color: #777; line-height: 1.4; display: block; }
+
+    .alert-box {
+      background: #fff8e1; border: 1px solid #f0c040; border-radius: 6px;
+      padding: 14px 18px; margin-bottom: 20px; font-size: .9rem; color: #7a5c00;
+      display: none;
+    }
+    .alert-box ul { margin-top: 6px; padding-left: 20px; }
+    .alert-box li { margin-top: 4px; }
 
     footer { text-align: center; color: #aaa; font-size: .8rem; margin-top: 40px; }
   </style>
@@ -68,12 +88,42 @@
       <a href="pages/pedidos.html">Pedidos</a>
       <a href="pages/movimentacao.html">Movimentação</a>
     </nav>
+    <div id="auth-user-area" style="display:none;">
+      <span id="hdr-username">…</span>
+      <button id="btn-logout-global">Sair</button>
+    </div>
   </header>
 
   <div class="wrapper">
     <div class="welcome">
       <h1>Sistema de Controle de Estoque</h1>
-      <p>Bem-vindo ao EstoqueManager. Use o menu acima ou os atalhos abaixo para acessar os módulos do sistema.</p>
+      <p>Bem-vindo, <strong id="welcome-name">usuário</strong>! Use o menu acima ou os atalhos abaixo para acessar os módulos do sistema.</p>
+    </div>
+
+    <!-- Alertas de estoque baixo -->
+    <div class="alert-box" id="alertBox">
+      ⚠️ <strong>Produtos com estoque abaixo do mínimo:</strong>
+      <ul id="alertList"></ul>
+    </div>
+
+    <!-- Estatísticas rápidas -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="num" id="statProdutos">—</div>
+        <div class="label">Produtos</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statFornecedores">—</div>
+        <div class="label">Fornecedores</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statClientes">—</div>
+        <div class="label">Clientes</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="statPedidos">—</div>
+        <div class="label">Pedidos Abertos</div>
+      </div>
     </div>
 
     <h2>Módulos disponíveis</h2>
@@ -112,5 +162,64 @@
   </div>
 
   <footer>EstoqueManager – Sistema Administrativo &copy; 2026</footer>
+
+  <script>
+  // ── Auth ────────────────────────────────────────────────────
+  (async function () {
+    try {
+      const res  = await fetch('pages/auth_api.php?action=check');
+      const json = await res.json();
+      if (!json.ok) { window.location.href = 'login.html'; return; }
+
+      const u = json.data;
+      document.getElementById('welcome-name').textContent = u.username;
+      document.getElementById('hdr-username').textContent = '👤 ' + u.username + (u.admin ? ' (Admin)' : '');
+      document.getElementById('auth-user-area').style.display = 'flex';
+
+      document.getElementById('btn-logout-global').addEventListener('click', async () => {
+        await fetch('pages/auth_api.php?action=logout', { method: 'POST' });
+        window.location.href = 'login.html';
+      });
+
+      carregarEstatisticas();
+    } catch {
+      window.location.href = 'login.html';
+    }
+  })();
+
+  // ── Estatísticas do dashboard ────────────────────────────────
+  async function carregarEstatisticas() {
+    const apis = [
+      { url: 'pages/produtos_api.php?por_pagina=1',     stat: 'statProdutos' },
+      { url: 'pages/fornecedores_api.php?por_pagina=1', stat: 'statFornecedores' },
+      { url: 'pages/clientes_api.php?por_pagina=1',     stat: 'statClientes' },
+      { url: 'pages/pedidos_api.php?por_pagina=1&search=Aberto', stat: 'statPedidos' },
+    ];
+
+    for (const { url, stat } of apis) {
+      try {
+        const j = await fetch(url).then(r => r.json());
+        if (j.ok) document.getElementById(stat).textContent = j.total ?? 0;
+      } catch { /* ignora */ }
+    }
+
+    // Alerta de estoque baixo
+    try {
+      const j = await fetch('pages/produtos_api.php?por_pagina=100').then(r => r.json());
+      if (j.ok && j.data) {
+        const baixos = j.data.filter(p => parseInt(p.estoque_atual) <= parseInt(p.estoque_min));
+        if (baixos.length > 0) {
+          const list = document.getElementById('alertList');
+          baixos.forEach(p => {
+            const li = document.createElement('li');
+            li.textContent = `${p.nome} — Atual: ${p.estoque_atual}, Mínimo: ${p.estoque_min}`;
+            list.appendChild(li);
+          });
+          document.getElementById('alertBox').style.display = 'block';
+        }
+      }
+    } catch { /* ignora */ }
+  }
+  </script>
 </body>
 </html>

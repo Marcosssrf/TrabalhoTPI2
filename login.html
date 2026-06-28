@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — EstoqueManager</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #f0f4f8;
+      font-family: Arial, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    .login-box {
+      background: #fff;
+      border: 1px solid #dde3eb;
+      border-radius: 8px;
+      padding: 40px 36px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    }
+    .logo {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #2c5f8a;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #888;
+      font-size: .85rem;
+      margin-bottom: 28px;
+    }
+    label {
+      display: block;
+      font-size: .83rem;
+      color: #555;
+      margin-bottom: 4px;
+      margin-top: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: .92rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input:focus { border-color: #2c5f8a; }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 9px 0;
+      font-size: .88rem;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
+    }
+    .tab-btn.active { color: #2c5f8a; border-bottom-color: #2c5f8a; font-weight: bold; }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .btn-login {
+      width: 100%;
+      margin-top: 22px;
+      padding: 11px;
+      background: #2c5f8a;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: .95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-login:hover { background: #1e4469; }
+    .btn-login:disabled { opacity: .6; cursor: not-allowed; }
+
+    .error-msg {
+      display: none;
+      background: #fdecea;
+      color: #c0392b;
+      border: 1px solid #f5c6c2;
+      border-radius: 5px;
+      padding: 9px 12px;
+      font-size: .85rem;
+      margin-top: 14px;
+    }
+    .error-msg.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="logo">📦 EstoqueManager</div>
+    <p class="subtitle">Faça login para acessar o sistema</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab-usuario">Usuário / Senha</button>
+      <button class="tab-btn"        data-tab="tab-pin">PIN / Senha</button>
+    </div>
+
+    <div id="tab-usuario" class="tab-pane active">
+      <label>Usuário</label>
+      <input id="inp-user" type="text" placeholder="nome de usuário" autocomplete="username"/>
+      <label>Senha</label>
+      <input id="inp-pass" type="password" placeholder="senha" autocomplete="current-password"/>
+    </div>
+
+    <div id="tab-pin" class="tab-pane">
+      <label>PIN</label>
+      <input id="inp-pin" type="text" placeholder="PIN de acesso" autocomplete="off"/>
+      <label>Senha</label>
+      <input id="inp-pass-pin" type="password" placeholder="senha" autocomplete="current-password"/>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+    <button class="btn-login" id="btn-login">Entrar</button>
+  </div>
+
+  <script>
+    // ── Troca de abas ────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn, .tab-pane').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+        hideError();
+      });
+    });
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+    function hideError() { document.getElementById('error-msg').classList.remove('show'); }
+
+    // ── Login ────────────────────────────────────────────────
+    document.getElementById('btn-login').addEventListener('click', fazerLogin);
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') fazerLogin(); });
+
+    async function fazerLogin() {
+      hideError();
+      const isPinTab = document.querySelector('.tab-btn.active').dataset.tab === 'tab-pin';
+      const user = isPinTab ? '' : document.getElementById('inp-user').value.trim();
+      const pass = isPinTab ? document.getElementById('inp-pass-pin').value
+                            : document.getElementById('inp-pass').value;
+      const pin  = isPinTab ? document.getElementById('inp-pin').value.trim() : '';
+
+      if ((!user && !pin) || !pass) {
+        showError('Preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-login');
+      btn.disabled = true; btn.textContent = 'Entrando…';
+
+      try {
+        const res  = await fetch('pages/auth_api.php?action=login', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ username: user, password: pass, pin }),
+        });
+        const json = await res.json();
+        if (json.ok) {
+          // Redireciona para a página que tentou acessar, ou para o index
+          const dest = sessionStorage.getItem('redirectAfterLogin') || 'index.html';
+          sessionStorage.removeItem('redirectAfterLogin');
+          window.location.href = dest;
+        } else {
+          showError(json.mensagem || 'Credenciais inválidas.');
+        }
+      } catch (e) {
+        showError('Erro de conexão com o servidor.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Entrar';
+      }
+    }
+  </script>
+</body>
+</html>

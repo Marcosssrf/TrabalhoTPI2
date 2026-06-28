@@ -1,94 +1,170 @@
-# 📦 EstoqueManager
+# EstoqueManager — TPI2 — Guia de Instalação e Uso
 
-Sistema de Controle de Estoque desenvolvido como trabalho prático da disciplina TPI2. A aplicação é composta por páginas HTML/CSS com lógica em JavaScript puro, sem dependência de frameworks ou back-end.
+## Visão Geral das Mudanças
 
-## Estrutura do Projeto
+Esta versão atende aos requisitos **10 e 11** do trabalho:
+
+| Requisito | O que foi implementado |
+|-----------|------------------------|
+| 10.1 | Todas as telas comunicam com o banco via PHP + PDO (MySQL) |
+| 10.2 | CRUD completo para **todas** as entidades (Produtos, Fornecedores, Clientes, Pedidos, Movimentações, Usuários) |
+| 11.1 | Login consulta tabela `usuarios` no banco; senha armazenada com `password_hash` (bcrypt) |
+| 11.2 | Sessão PHP (`$_SESSION`) guarda o usuário logado; todas as APIs verificam a sessão |
+
+---
+
+## Estrutura de Arquivos
 
 ```
 TrabalhoTPI2/
-├── index.html              # Página inicial com menu de navegação
-├── shared.css              # Folha de estilo compartilhada entre todas as páginas
+├── login.html                  ← Página de login (entrada do sistema)
+├── index.html                  ← Dashboard (requer login)
+├── shared.css
 └── pages/
-    ├── produtos.html       # Formulário de cadastro de produtos
-    ├── fornecedores.html   # Formulário de cadastro de fornecedores
-    ├── clientes.html       # Formulário de cadastro de clientes
-    ├── pedidos.html        # Formulário de registro de pedidos
-    └── movimentacao.html   # Formulário de movimentação de estoque
+    ├── db.php                  ← Conexão PDO + helpers compartilhados
+    ├── auth_api.php            ← API de autenticação (login/logout/check)
+    ├── auth.js                 ← Guard de sessão para todas as páginas
+    ├── schema.sql              ← SQL completo (todas as tabelas)
+    │
+    ├── clientes.html / clientes.js / clientes_api.php
+    ├── fornecedores.html       / fornecedores_api.php
+    ├── produtos.html           / produtos_api.php
+    ├── pedidos.html            / pedidos_api.php
+    ├── movimentacao.html       / movimentacao_api.php
+    └── usuarios.html           / usuarios_api.php
 ```
 
-## Módulos
+---
 
-| Módulo | Arquivo | Descrição |
-|---|---|---|
-| Produtos | `pages/produtos.html` | Cadastro de produtos com preço, categoria e controle de estoque |
-| Fornecedores | `pages/fornecedores.html` | Cadastro de fornecedores com CNPJ, contato e condições comerciais |
-| Clientes | `pages/clientes.html` | Cadastro de clientes físicos ou jurídicos com limite de crédito |
-| Pedidos | `pages/pedidos.html` | Registro de pedidos de venda com múltiplos itens e formas de pagamento |
-| Movimentação | `pages/movimentacao.html` | Registro de entradas e saídas com controle de saldo em tempo real |
+## Pré-requisitos
 
-## Como Executar
+- PHP 8.0+ com extensões `pdo`, `pdo_mysql`, `openssl`
+- MySQL 5.7+ ou MariaDB 10.3+
+- Servidor web local: **XAMPP**, **Laragon**, **WAMP**, ou similar
 
-Basta abrir o arquivo `index.html` diretamente no navegador. Nenhuma instalação ou servidor é necessário.
+---
 
-```bash
-# Opção 1 – abrir direto no navegador (duplo clique em index.html)
+## Passo a Passo de Instalação
 
-# Opção 2 – via extensão Live Server no VS Code
-# Clique com botão direito em index.html → "Open with Live Server"
+### 1. Copiar os arquivos
+
+Copie a pasta `TrabalhoTPI2/` para dentro do diretório público do seu servidor:
+
+```
+XAMPP  → C:\xampp\htdocs\TrabalhoTPI2\
+Laragon → C:\laragon\www\TrabalhoTPI2\
 ```
 
-## Tecnologias
+### 2. Criar o banco de dados
 
-- **HTML5** – estrutura semântica dos formulários
-- **CSS3** – layout responsivo com grid e flexbox
-- **JavaScript (ES6)** – validação, cálculos e interatividade no cliente
+Abra o **phpMyAdmin** (ou MySQL Workbench) e execute o arquivo:
 
-## Colaboradores
-
-| Aluno | Branch |
-|---|---|
-| Marcos | `marcos` |
-| Otávio | `otavio` |
-| Pitu | `pitu` |
-| Vhmazza | `vhmazza` |
-
-## Fluxo Git Utilizado
-
-```bash
-# 1. Inicialização
-git init
-git add .
-git commit -m "feat: estrutura inicial do projeto"
-
-# 2. Conexão com o GitHub
-git remote add origin https://github.com/Marcosssrf/TrabalhoTPI2.git
-git branch -M main
-git push -u origin main
-
-# 3. Criação das branches dos alunos
-git checkout -b marcos
-git checkout -b otavio
-git checkout -b pitu
-git checkout -b vhmazza
-
-# 4. Cada aluno commita na sua branch
-git checkout <branch-do-aluno>
-git add .
-git commit -m "feat: descrição da contribuição"
-git push
-
-# 5. Baixar as branches remotas localmente
-git fetch
-git checkout -b marcos origin/marcos
-git checkout -b pitu origin/pitu
-git checkout -b otavio origin/otavio
-git checkout -b vhmazza origin/vhmazza
-
-# 6. Merge na main
-git checkout main
-git merge marcos --no-ff -m "merge: marcos"
-git merge pitu --no-ff -m "merge: pitu"
-git merge otavio --no-ff -m "merge: otavio"
-git merge vhmazza --no-ff -m "merge: vhmazza"
-git push origin main
 ```
+pages/schema.sql
+```
+
+Ele cria o banco `estoque_manager` com todas as tabelas e um usuário admin padrão.
+
+### 3. Ajustar credenciais do banco
+
+Abra `pages/db.php` e altere se necessário:
+
+```php
+define('DB_HOST', 'localhost');
+define('DB_PORT', '3306');
+define('DB_NAME', 'estoque_manager');
+define('DB_USER', 'root');
+define('DB_PASS', '');        // sua senha do MySQL
+```
+
+### 4. Acessar o sistema
+
+Abra no navegador:
+
+```
+http://localhost/TrabalhoTPI2/login.html
+```
+
+---
+
+## Credenciais Padrão
+
+| Campo    | Valor      |
+|----------|------------|
+| Usuário  | `admin`    |
+| Senha    | `password` |
+
+> ⚠️ **Troque a senha após o primeiro acesso!**
+> A senha padrão `password` é o hash `$2y$10$92IXUNpkjO0rOQ5...` inserido no `schema.sql`.
+
+---
+
+## Como Funciona a Autenticação
+
+### Fluxo
+
+```
+Usuário acessa qualquer página
+    ↓
+auth.js chama auth_api.php?action=check
+    ↓
+PHP verifica $_SESSION['usuario_id']
+    ↓
+Não autenticado → redireciona para login.html
+Autenticado     → exibe a página normalmente
+```
+
+### Login por usuário ou PIN
+
+- **Aba "Usuário / Senha"**: informe o nome de usuário + senha
+- **Aba "PIN / Senha"**: informe o PIN numérico + senha
+
+### Sessão
+
+O PHP usa `session_start()` em todo arquivo de API. Ao fazer login com sucesso:
+
+```php
+$_SESSION['usuario_id']    = $row['id'];
+$_SESSION['usuario_nome']  = $row['username'];
+$_SESSION['usuario_admin'] = (bool)$row['admin'];
+```
+
+---
+
+## Perfis de Usuário
+
+| Permissão                | Usuário Comum | Administrador |
+|--------------------------|:---:|:---:|
+| Cadastrar / editar registros | ✅ | ✅ |
+| Excluir clientes, produtos, fornecedores, pedidos | ✅ | ✅ |
+| Excluir movimentações (reverte estoque) | ❌ | ✅ |
+| Excluir usuários | ❌ | ✅ |
+| Definir perfil "admin" ao criar usuário | ❌ | ✅ |
+
+---
+
+## Endpoints das APIs
+
+Todos os endpoints seguem o padrão REST e exigem sessão ativa:
+
+| Endpoint | GET | POST | PUT | DELETE |
+|----------|-----|------|-----|--------|
+| `auth_api.php?action=check` | Verifica sessão | — | — | — |
+| `auth_api.php?action=login` | — | Login | — | — |
+| `auth_api.php?action=logout` | — | Logout | — | — |
+| `usuarios_api.php` | Lista / busca | Cadastra | Atualiza | Exclui |
+| `clientes_api.php` | Lista / busca | Cadastra | Atualiza | Exclui |
+| `fornecedores_api.php` | Lista / busca | Cadastra | Atualiza | Exclui |
+| `produtos_api.php` | Lista / busca | Cadastra | Atualiza | Exclui |
+| `pedidos_api.php` | Lista / busca | Cadastra | Atualiza | Exclui |
+| `movimentacao_api.php` | Lista / busca | Registra | — | Exclui (admin) |
+
+---
+
+## Observações Técnicas
+
+- Senhas armazenadas com **bcrypt** (`password_hash` / `password_verify`)
+- Queries usam **PDO com prepared statements** (proteção contra SQL injection)
+- Movimentações atualizam o `estoque_atual` em transação com `FOR UPDATE` (evita race condition)
+- Exclusão de movimentação **reverte automaticamente** o saldo do produto
+- `auth.js` detecta automaticamente se está em `/pages/` ou na raiz para ajustar os caminhos das APIs

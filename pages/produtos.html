@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cadastro de Produtos – EstoqueManager</title>
+  <title>Produtos — EstoqueManager</title>
   <link rel="stylesheet" href="../shared.css">
 </head>
 <body>
@@ -21,30 +21,73 @@
   </header>
 
   <div class="page-wrapper">
-    <div class="breadcrumb"><a href="../index.html">Início</a> › Cadastro de Produtos</div>
+    <div class="breadcrumb"><a href="../index.html">Início</a> › Produtos</div>
     <h1>Cadastro de Produtos</h1>
-    <p class="subtitle">Preencha os dados do produto. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
+    <p class="subtitle">Gerencie os produtos do estoque. Campos marcados com <span style="color:#c0392b">*</span> são obrigatórios.</p>
 
-    <div class="form-card">
+    <!-- ── Pesquisa ── -->
+    <div class="form-card" style="margin-bottom:16px;">
+      <fieldset>
+        <legend>Pesquisar Produtos</legend>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="field" style="flex:1;">
+            <label>Busca</label>
+            <input id="campoPesquisa" placeholder="Código, nome ou categoria…"/>
+          </div>
+          <button class="btn-submit" id="btnPesquisar">🔍 Pesquisar</button>
+          <button class="btn-submit" id="btnNovo" style="background:#27ae60;">+ Novo Produto</button>
+        </div>
+        <div id="resultadoPesquisa" style="display:none;margin-top:14px;">
+          <p style="font-size:.85rem;color:#666;margin-bottom:8px;">
+            Resultados: <strong id="totalRegistros">0</strong> produto(s)
+          </p>
+          <div style="overflow-x:auto;">
+            <table id="tabelaProdutos" style="width:100%;border-collapse:collapse;font-size:.88rem;">
+              <thead>
+                <tr style="background:#f8f8f8;color:#555;">
+                  <th style="padding:8px;text-align:left;">Código</th>
+                  <th style="padding:8px;text-align:left;">Nome</th>
+                  <th style="padding:8px;text-align:left;">Categoria</th>
+                  <th style="padding:8px;text-align:right;">R$ Venda</th>
+                  <th style="padding:8px;text-align:right;">Estoque</th>
+                  <th style="padding:8px;text-align:center;">Status</th>
+                  <th style="padding:8px;text-align:center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaBody"></tbody>
+            </table>
+          </div>
+          <div id="paginacao" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;"></div>
+        </div>
+        <p id="semResultados" style="display:none;color:#999;font-size:.88rem;padding:10px 0;">Nenhum produto encontrado.</p>
+      </fieldset>
+    </div>
+
+    <!-- ── Formulário ── -->
+    <div class="form-card" id="painelFormulario" style="display:none;">
+      <div id="modoEdicaoAviso" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:.88rem;color:#856404;">
+        ✏️ Modo edição — <strong id="nomeEdicaoAviso"></strong>
+      </div>
       <form id="formProduto" novalidate>
+        <input type="hidden" id="produtoId"/>
 
         <fieldset>
           <legend>Identificação</legend>
           <div class="row">
             <div class="field">
               <label>Código <span class="req">*</span></label>
-              <input type="text" id="codigo" placeholder="Ex.: PROD-0001" maxlength="20">
+              <input type="text" id="codigo" placeholder="Ex.: PROD-0001" maxlength="20"/>
               <span class="field-error" id="erCodigo">Campo obrigatório.</span>
             </div>
             <div class="field">
               <label>Código de Barras</label>
-              <input type="text" id="codBarras" placeholder="EAN-13 ou interno">
+              <input type="text" id="codBarras" placeholder="EAN-13 ou interno"/>
             </div>
           </div>
           <div class="row">
             <div class="field full">
               <label>Nome do Produto <span class="req">*</span></label>
-              <input type="text" id="nomeProduto" placeholder="Nome completo do produto">
+              <input type="text" id="nomeProduto" placeholder="Nome completo do produto"/>
               <span class="field-error" id="erNome">Campo obrigatório.</span>
             </div>
           </div>
@@ -57,12 +100,9 @@
               <label>Categoria <span class="req">*</span></label>
               <select id="categoria">
                 <option value="">Selecione...</option>
-                <option>Eletrônicos</option>
-                <option>Informática</option>
-                <option>Papelaria</option>
-                <option>Limpeza</option>
-                <option>Alimentos</option>
-                <option>Outros</option>
+                <option>Eletrônicos</option><option>Informática</option>
+                <option>Papelaria</option><option>Limpeza</option>
+                <option>Alimentos</option><option>Outros</option>
               </select>
               <span class="field-error" id="erCategoria">Campo obrigatório.</span>
             </div>
@@ -70,11 +110,9 @@
               <label>Unidade de Medida <span class="req">*</span></label>
               <select id="unidade">
                 <option value="">Selecione...</option>
-                <option>Unidade (UN)</option>
-                <option>Caixa (CX)</option>
-                <option>Quilo (KG)</option>
-                <option>Litro (LT)</option>
-                <option>Metro (MT)</option>
+                <option value="UN">Unidade (UN)</option><option value="CX">Caixa (CX)</option>
+                <option value="KG">Quilo (KG)</option><option value="LT">Litro (LT)</option>
+                <option value="MT">Metro (MT)</option>
               </select>
               <span class="field-error" id="erUnidade">Campo obrigatório.</span>
             </div>
@@ -85,34 +123,26 @@
           <legend>Preços e Estoque</legend>
           <div class="row">
             <div class="field">
-              <label>Preço de Custo (R$) <span class="req">*</span></label>
-              <input type="number" id="precoCusto" min="0" step="0.01" placeholder="0,00">
-              <span class="field-error" id="erCusto">Campo obrigatório.</span>
+              <label>Preço de Custo (R$)</label>
+              <input type="number" id="precoCusto" min="0" step="0.01" placeholder="0,00"/>
             </div>
             <div class="field">
-              <label>Margem de Lucro (%) <span class="req">*</span></label>
-              <input type="number" id="margem" min="0" step="0.01" placeholder="Ex.: 30">
-              <span class="field-error" id="erMargem">Campo obrigatório.</span>
+              <label>Margem (%)</label>
+              <input type="number" id="margem" min="0" step="0.01" placeholder="Ex.: 30"/>
             </div>
             <div class="field">
               <label>Preço de Venda (R$)</label>
-              <input type="number" id="precoVenda" readonly placeholder="Calculado automaticamente">
+              <input type="number" id="precoVenda" min="0" step="0.01" placeholder="0,00"/>
             </div>
           </div>
           <div class="row">
             <div class="field">
-              <label>Qtd. em Estoque <span class="req">*</span></label>
-              <input type="number" id="qtdAtual" min="0" placeholder="0">
-              <span class="field-error" id="erQtd">Campo obrigatório.</span>
+              <label>Qtd. em Estoque</label>
+              <input type="number" id="qtdAtual" min="0" placeholder="0"/>
             </div>
             <div class="field">
-              <label>Estoque Mínimo <span class="req">*</span></label>
-              <input type="number" id="estoqueMin" min="0" placeholder="0">
-              <span class="field-error" id="erMin">Campo obrigatório.</span>
-            </div>
-            <div class="field">
-              <label>Localização no Depósito</label>
-              <input type="text" id="localizacao" placeholder="Ex.: Prateleira A3">
+              <label>Estoque Mínimo</label>
+              <input type="number" id="estoqueMin" min="0" placeholder="0"/>
             </div>
           </div>
           <div class="info-box" id="infoBox"></div>
@@ -123,19 +153,15 @@
           <div class="row">
             <div class="field">
               <label>Fornecedor Principal</label>
-              <select id="fornecedor">
-                <option value="">Selecione...</option>
-                <option>Fornecedor ABC Ltda</option>
-                <option>Tech Distribuições</option>
-                <option>Mega Atacado</option>
+              <select id="fornecedorId">
+                <option value="">Carregando…</option>
               </select>
             </div>
             <div class="field">
               <label>Status</label>
-              <select id="status">
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-                <option value="descontinuado">Descontinuado</option>
+              <select id="ativo">
+                <option value="1">Ativo</option>
+                <option value="0">Inativo</option>
               </select>
             </div>
           </div>
@@ -148,8 +174,8 @@
         </fieldset>
 
         <div class="form-actions">
-          <a class="btn-back" href="../index.html">← Voltar</a>
-          <button type="submit" class="btn-submit">Salvar Produto</button>
+          <button type="button" class="btn-back" id="btnCancelar">← Cancelar</button>
+          <button type="submit" class="btn-submit" id="btnSalvar">Salvar Produto</button>
         </div>
       </form>
     </div>
@@ -157,63 +183,224 @@
 
   <div class="toast" id="toast"></div>
 
+  <script src="auth.js"></script>
   <script>
-    function calcVenda() {
-      const custo = parseFloat(document.getElementById('precoCusto').value) || 0;
-      const margem = parseFloat(document.getElementById('margem').value) || 0;
-      const venda = document.getElementById('precoVenda');
-      venda.value = (custo > 0 && margem > 0) ? (custo * (1 + margem / 100)).toFixed(2) : '';
-    }
-    document.getElementById('precoCusto').addEventListener('input', calcVenda);
-    document.getElementById('margem').addEventListener('input', calcVenda);
+  'use strict';
+  const API = 'produtos_api.php';
+  const API_FOR = 'fornecedores_api.php';
+  let pagina = 1, totalPag = 1, editandoId = null;
 
-    function checarEstoque() {
-      const atual = parseInt(document.getElementById('qtdAtual').value) || 0;
-      const min = parseInt(document.getElementById('estoqueMin').value) || 0;
-      const box = document.getElementById('infoBox');
-      if (min > 0 && atual < min) {
-        box.textContent = '⚠ Atenção: estoque atual (' + atual + ') está abaixo do mínimo (' + min + '). Um pedido de reposição será gerado ao salvar.';
-        box.className = 'info-box show';
-      } else {
-        box.className = 'info-box';
+  // ── Utilitários ──────────────────────────────────────────
+  function toast(msg, ok = true) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + (ok ? 'ok' : 'err');
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  async function api(url, opts = {}) {
+    const r = await fetch(url, opts);
+    try { return await r.json(); } catch { return { ok: false, mensagem: 'Erro de servidor.' }; }
+  }
+
+  // ── Fornecedores no select ────────────────────────────────
+  async function carregarFornecedores() {
+    const j = await api(API_FOR + '?por_pagina=100');
+    const sel = document.getElementById('fornecedorId');
+    sel.innerHTML = '<option value="">Nenhum</option>';
+    if (j.ok && j.data) {
+      j.data.forEach(f => {
+        const o = document.createElement('option');
+        o.value = f.id; o.textContent = f.razao_social;
+        sel.appendChild(o);
+      });
+    }
+  }
+
+  // ── Lista / pesquisa ─────────────────────────────────────
+  async function carregarLista() {
+    const q   = document.getElementById('campoPesquisa').value.trim();
+    const url = API + `?pagina=${pagina}&por_pagina=10` + (q ? '&search=' + encodeURIComponent(q) : '');
+    const j   = await api(url);
+
+    document.getElementById('resultadoPesquisa').style.display = 'block';
+    document.getElementById('semResultados').style.display      = 'none';
+
+    if (!j.ok) { toast(j.mensagem, false); return; }
+
+    document.getElementById('totalRegistros').textContent = j.total ?? 0;
+    totalPag = Math.max(1, Math.ceil((j.total ?? 0) / 10));
+
+    const tbody = document.getElementById('tabelaBody');
+    if (!j.data || j.data.length === 0) {
+      tbody.innerHTML = '';
+      document.getElementById('semResultados').style.display = 'block';
+      document.getElementById('resultadoPesquisa').style.display = 'none';
+      return;
+    }
+
+    tbody.innerHTML = j.data.map(p => `
+      <tr style="border-bottom:1px solid #eee;">
+        <td style="padding:8px;">${esc(p.codigo)}</td>
+        <td style="padding:8px;">${esc(p.nome)}</td>
+        <td style="padding:8px;">${esc(p.categoria)}</td>
+        <td style="padding:8px;text-align:right;">R$ ${fmtNum(p.preco_venda)}</td>
+        <td style="padding:8px;text-align:right;${parseInt(p.estoque_atual) <= parseInt(p.estoque_min) ? 'color:#c0392b;font-weight:bold;' : ''}">${p.estoque_atual}</td>
+        <td style="padding:8px;text-align:center;">
+          <span style="background:${p.ativo == 1 ? '#d5f5e3' : '#fdecea'};color:${p.ativo == 1 ? '#1e8449' : '#c0392b'};border-radius:3px;padding:2px 8px;font-size:.8rem;">
+            ${p.ativo == 1 ? 'Ativo' : 'Inativo'}
+          </span>
+        </td>
+        <td style="padding:8px;text-align:center;white-space:nowrap;">
+          <button onclick="editarProduto(${p.id})" style="background:#2980b9;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.8rem;cursor:pointer;">✏ Editar</button>
+          <button onclick="excluirProduto(${p.id},'${esc(p.nome)}')" style="background:#c0392b;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.8rem;cursor:pointer;margin-left:4px;">🗑 Excluir</button>
+        </td>
+      </tr>`).join('');
+
+    renderPaginacao();
+  }
+
+  function renderPaginacao() {
+    const div = document.getElementById('paginacao');
+    div.innerHTML = '';
+    for (let i = 1; i <= totalPag; i++) {
+      const b = document.createElement('button');
+      b.textContent = i;
+      b.style.cssText = `padding:4px 10px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:${i===pagina?'#2c5f8a':'#fff'};color:${i===pagina?'#fff':'#333'};`;
+      b.onclick = () => { pagina = i; carregarLista(); };
+      div.appendChild(b);
+    }
+  }
+
+  // ── Abrir / fechar formulário ─────────────────────────────
+  function abrirFormulario(zerado = true) {
+    document.getElementById('painelFormulario').style.display = 'block';
+    document.getElementById('painelFormulario').scrollIntoView({ behavior: 'smooth' });
+    if (zerado) limparForm();
+  }
+
+  function limparForm() {
+    editandoId = null;
+    document.getElementById('formProduto').reset();
+    document.getElementById('produtoId').value = '';
+    document.getElementById('modoEdicaoAviso').style.display = 'none';
+    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('input.error, select.error').forEach(e => e.classList.remove('error'));
+  }
+
+  // ── Editar ────────────────────────────────────────────────
+  async function editarProduto(id) {
+    const j = await api(API + '?action=buscar&id=' + id);
+    if (!j.ok) { toast(j.mensagem, false); return; }
+    const p = j.data;
+    editandoId = id;
+    document.getElementById('produtoId').value   = id;
+    document.getElementById('codigo').value       = p.codigo        ?? '';
+    document.getElementById('codBarras').value    = p.cod_barras    ?? '';
+    document.getElementById('nomeProduto').value  = p.nome          ?? '';
+    document.getElementById('categoria').value    = p.categoria     ?? '';
+    document.getElementById('unidade').value      = p.unidade       ?? '';
+    document.getElementById('precoCusto').value   = p.preco_custo   ?? '';
+    document.getElementById('precoVenda').value   = p.preco_venda   ?? '';
+    document.getElementById('margem').value       = '';
+    document.getElementById('qtdAtual').value     = p.estoque_atual ?? '';
+    document.getElementById('estoqueMin').value   = p.estoque_min   ?? '';
+    document.getElementById('fornecedorId').value = p.fornecedor_id ?? '';
+    document.getElementById('ativo').value        = p.ativo != null ? String(p.ativo) : '1';
+    document.getElementById('obs').value          = p.obs           ?? '';
+    document.getElementById('modoEdicaoAviso').style.display  = 'block';
+    document.getElementById('nomeEdicaoAviso').textContent    = p.nome;
+    abrirFormulario(false);
+  }
+
+  // ── Excluir ────────────────────────────────────────────────
+  async function excluirProduto(id, nome) {
+    if (!confirm(`Excluir o produto "${nome}"?`)) return;
+    const j = await api(API, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    toast(j.mensagem, j.ok);
+    if (j.ok) carregarLista();
+  }
+
+  // ── Salvar (criar / atualizar) ────────────────────────────
+  document.getElementById('formProduto').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const obrig = [['codigo','erCodigo'],['nomeProduto','erNome'],['categoria','erCategoria'],['unidade','erUnidade']];
+    let valido = true;
+    obrig.forEach(([id,er]) => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) {
+        el.classList.add('error');
+        document.getElementById(er).classList.add('show');
+        valido = false;
       }
-    }
-    document.getElementById('qtdAtual').addEventListener('input', checarEstoque);
-    document.getElementById('estoqueMin').addEventListener('input', checarEstoque);
-
-    const obrigatorios = [
-      ['codigo','erCodigo'],['nomeProduto','erNome'],['categoria','erCategoria'],
-      ['unidade','erUnidade'],['precoCusto','erCusto'],['margem','erMargem'],
-      ['qtdAtual','erQtd'],['estoqueMin','erMin']
-    ];
-    obrigatorios.forEach(([id, er]) => {
-      document.getElementById(id).addEventListener('input', () => {
-        document.getElementById(id).classList.remove('error');
-        document.getElementById(er).classList.remove('show');
-      });
     });
+    if (!valido) { toast('Preencha os campos obrigatórios.', false); return; }
 
-    document.getElementById('formProduto').addEventListener('submit', function(e) {
-      e.preventDefault();
-      let ok = true;
-      obrigatorios.forEach(([id, er]) => {
-        if (!document.getElementById(id).value.trim()) {
-          document.getElementById(id).classList.add('error');
-          document.getElementById(er).classList.add('show');
-          ok = false;
-        }
-      });
-      if (!ok) { toast('Preencha todos os campos obrigatórios.', 'err'); return; }
-      toast('Produto cadastrado com sucesso!', 'ok');
-      setTimeout(() => this.reset(), 1800);
+    const custo  = parseFloat(document.getElementById('precoCusto').value) || 0;
+    const marg   = parseFloat(document.getElementById('margem').value) || 0;
+    let   venda  = parseFloat(document.getElementById('precoVenda').value) || 0;
+    if (marg > 0 && custo > 0) venda = custo * (1 + marg / 100);
+
+    const payload = {
+      id:            editandoId,
+      codigo:        document.getElementById('codigo').value.trim(),
+      cod_barras:    document.getElementById('codBarras').value.trim(),
+      nome:          document.getElementById('nomeProduto').value.trim(),
+      categoria:     document.getElementById('categoria').value,
+      unidade:       document.getElementById('unidade').value,
+      preco_custo:   custo,
+      preco_venda:   parseFloat(venda.toFixed(2)),
+      estoque_atual: parseInt(document.getElementById('qtdAtual').value) || 0,
+      estoque_min:   parseInt(document.getElementById('estoqueMin').value) || 0,
+      fornecedor_id: document.getElementById('fornecedorId').value || null,
+      ativo:         parseInt(document.getElementById('ativo').value),
+      obs:           document.getElementById('obs').value.trim(),
+    };
+
+    const j = await api(API, {
+      method:  editandoId ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
     });
+    toast(j.mensagem, j.ok);
+    if (j.ok) { limparForm(); document.getElementById('painelFormulario').style.display = 'none'; carregarLista(); }
+  });
 
-    function toast(msg, tipo) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.className = 'toast show ' + tipo;
-      setTimeout(() => t.className = 'toast', 3000);
-    }
+  // ── Cálculo automático de venda ──────────────────────────
+  function calcVenda() {
+    const c = parseFloat(document.getElementById('precoCusto').value) || 0;
+    const m = parseFloat(document.getElementById('margem').value) || 0;
+    if (c > 0 && m > 0) document.getElementById('precoVenda').value = (c*(1+m/100)).toFixed(2);
+  }
+  document.getElementById('precoCusto').addEventListener('input', calcVenda);
+  document.getElementById('margem').addEventListener('input', calcVenda);
+
+  // ── Eventos ───────────────────────────────────────────────
+  document.getElementById('btnPesquisar').addEventListener('click', () => { pagina = 1; carregarLista(); });
+  document.getElementById('campoPesquisa').addEventListener('keydown', e => { if (e.key==='Enter') { pagina=1; carregarLista(); }});
+  document.getElementById('btnNovo').addEventListener('click', () => abrirFormulario(true));
+  document.getElementById('btnCancelar').addEventListener('click', () => {
+    limparForm(); document.getElementById('painelFormulario').style.display = 'none';
+  });
+  document.querySelectorAll('#formProduto input, #formProduto select').forEach(el => {
+    el.addEventListener('input', () => { el.classList.remove('error'); });
+  });
+
+  // Helpers
+  function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtNum(n) { return parseFloat(n||0).toFixed(2).replace('.',','); }
+
+  // Expõe funções para onclick inline
+  window.editarProduto  = editarProduto;
+  window.excluirProduto = excluirProduto;
+
+  // ── Init ──────────────────────────────────────────────────
+  carregarFornecedores();
+  carregarLista();
   </script>
 </body>
 </html>
